@@ -88,15 +88,11 @@ class LogisticRegressionSAClassifier:
         for document in documents:
             feature_set.append(self.doc_features(document))
 
-        ones = np.ones(self.NFEATURES)
+        ones = np.ones((1, len(documents)))
+        print("ones shape", ones.shape)
+        print("feature_set shape", np.array(feature_set).T.shape)
 
-        feature_set = np.append(ones, np.array(feature_set), axis=0)
-
-        return feature_set.T
-
-        #ones = np.ones(self.NFEATURES)
-
-        #return np.append(np.array(feature_set), ones, axis=0)
+        return np.concatenate((ones, np.array(feature_set).T), axis=0)
 
     def train(self):
         data_input = self.input_matrix(self.training_set)
