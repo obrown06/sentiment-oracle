@@ -90,7 +90,7 @@ class DeepNet:
                 Wl - a numpy array of dimension (layer_dims[l - 1], layer_dims[l]) containing the layer's weights
                 bl - a numpy array of dimension (layer_dims[l]) containing the layer's biases
         """
-        
+
         parameters = {}
 
         for l in range(1, len(layer_dims)):
@@ -132,7 +132,7 @@ class DeepNet:
         Z, linear_cache = linear_forward(A_prev, W, b)
 
         if activation == "relu":
-            A, activation_cache = relu(Z)
+            A, activation_cache = lrelu(Z)
         else:
             A, activation_cache = sigmoid(Z)
 
@@ -226,14 +226,28 @@ class DeepNet:
         linear_cache, activation_cache = cache
 
         if activation == "relu":
-            dZ = relu(dA, activation_cache)
+            dZ = lrelu_backward(dA, activation_cache)
             dA_prev, dW, db = linear_backward(dZ, linear_cache)
 
         elif activation == "sigmoid":
-            dZ = sigmoid(dA, activation_cache)
+            dZ = sigmoid_backward(dA, activation_cache)
             dA_prev, dW, db = linear_backward(dZ, linear_cache)
 
         return dA_prev, dW, db
+
+    def lrelu(Z):
+        A = math.max(Z, 0.01 * Z)
+        return A, Z
+
+    def sigmoid(Z):
+        A = 1 / (1 + math.exp(-Z))
+        return A, Z
+
+    def sigmoid_backward(dA, Z):
+        return np.multiply(dA, np.multiply(Z, 1 - Z))
+
+    def lrelu_backward(dA, Z):
+        return np.multiply(dA, np.where(Z > 0, Z, 0.01 * Z))
 
     def backward_prop(AL, Y, caches):
         """
@@ -280,159 +294,3 @@ class DeepNet:
             params["b" + str(l)] = params["b" + str(l)] - learning_rate * grads["b" + str(l)]
 
         return params
-
-
-
-
-terminators = {',', '.', '!', ';', ':', '?', '\n'}
-negations = {"not", "no", "never", "n't"}
-NEEDED_STOPWORDS = ['over','only','very','not','no']
-STOPWORDS = set(stopwords.words('english')) - set(NEEDED_STOPWORDS)
-NEG_CONTRACTIONS = [
-    (r'aren\'t', 'are not'),
-    (r'can\'t', 'can not'),
-    (r'couldn\'t', 'could not'),
-    (r'daren\'t', 'dare not'),
-    (r'didn\'t', 'did not'),
-    (r'doesn\'t', 'does not'),
-    (r'don\'t', 'do not'),
-    (r'isn\'t', 'is not'),
-    (r'hasn\'t', 'has not'),
-    (r'haven\'t', 'have not'),
-    (r'hadn\'t', 'had not'),
-    (r'mayn\'t', 'may not'),
-    (r'mightn\'t', 'might not'),
-    (r'mustn\'t', 'must not'),
-    (r'needn\'t', 'need not'),
-    (r'oughtn\'t', 'ought not'),
-    (r'shan\'t', 'shall not'),
-    (r'shouldn\'t', 'should not'),
-    (r'wasn\'t', 'was not'),
-    (r'weren\'t', 'were not'),
-    (r'won\'t', 'will not'),
-    (r'wouldn\'t', 'would not'),
-    (r'ain\'t', 'am not')
-]
-
-
-def add_negations(word_list):
-    in_negation_zone = False
-    for i in range(len(word_list)):
-        word = word_list[i]
-        if in_negation_zone:
-            word_list[i] = "NOT_" + word
-        if word in negations or word[-3:] in negations:
-            in_negation_zone = not in_negation_zone
-        if word[-1] in terminators:
-            in_negation_zone = False
-
-    return word_list
-
-def remove_terminators(word_list):
-    for i in range(len(word_list)):
-        word = word_list[i]
-        last = len(word) - 1
-
-        while last >= 0 and (word[last] in terminators or word[last] == '\n'):
-            last = last - 1
-
-        word_list[i] = word[0:last + 1]
-
-    return word_list
-
-def remove_null_words(word_list):
-    length = len(word_list)
-    i = 0
-
-    while i < length:
-        if word_list[i] == "":
-            del word_list[i]
-            length = length - 1
-        else:
-            i = i + 1
-
-    return word_list
-
-def remove_stop_words(word_list):
-    length = len(word_list)
-    i = 0
-
-    while i < length:
-        if word_list[i] in STOPWORDS:
-            del word_list[i]
-            length = length - 1
-        else:
-            i = i + 1
-
-    return word_list
-
-
-def pre_process(documents):
-    print("in pre_process")
-    for i in range(len(documents)):
-        document = documents[i].lower()
-
-        for word in NEG_CONTRACTIONS:
-            document = re.sub(word[0], word[1], document)
-
-        word_list = document.split(' ')
-        remove_null_words(word_list)
-        add_negations(word_list)
-        remove_terminators(word_list)
-        #remove_stop_words(word_list)
-        documents[i] = " ".join(word_list)
-
-    print("done with pre_process")
-    return documents
-
-def strip_labels(documents):
-    texts = []
-    labels = []
-    for d in documents:
-        if d.split(' ', 1)[0] == "__label__1":
-            labels.append(0)
-        else:
-            labels.append(1)
-
-        texts.append(d.split(' ', 1)[1])
-
-    return texts, np.array(labels).T
-
-with open("test.ft.txt", 'r', encoding='utf8') as file:
-    test_reviews = tuple(file)
-
-with open("train.ft.txt", 'r', encoding='utf8') as file:
-    train_reviews = tuple(file)
-
-
-    #m = x.shape[1]
-    #grads = 1 / float(m) * np.dot(x, (h - y))
-
-    #reg = self.LAMBDA / float(m) * w
-    #reg[0] = 0
-
-h = np.array([0.5, 0.5, 0.5, 0.5])
-y = np.array([0.75, 0.25, 0.1, 0.1])
-x = np.array([[3, 4, 5, 6], [1, 2, 1, 2]])
-w = np.array([3, 4])
-
-
-train_texts, train_labels = strip_labels(train_reviews[0:int(len(train_reviews) / 100)])
-test_texts, test_labels = strip_labels(test_reviews[0:int(len(test_reviews) / 100)])
-
-ALPHA_VALUES = [0.01, 0.05, 0.1, 0.5, 1, 1.5, 2, 3, 5, 10, 50, 100]
-
-#ALPHA of ~1.5 / 2 is best
-
-lr_classifier = LogisticRegressionSAClassifier(pre_process(train_texts), train_labels)
-
-for val in ALPHA_VALUES:
-    lr_classifier.LAMBDA = val
-
-    lr_classifier.train("batch")
-    print("LAMBDA: ")
-    print(val)
-    print("Train Set Accuracy:")
-    print(lr_classifier.test(train_texts, train_labels))
-    print("Test Set Accuracy:")
-    print(lr_classifier.test(test_texts, test_labels))
