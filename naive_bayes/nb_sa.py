@@ -83,6 +83,7 @@ class NaiveBayesBernoulliClassifier:
         actual = []
         predictions = []
         mapping = dict()
+        #un-hard code this
         mapping["__label__1"] = 0
         mapping["__label__2"] = 1
 
@@ -152,8 +153,6 @@ class NaiveBayesMultinomialClassifier:
         for word in document:
             if word in class_vocab_probs:
                 prob = prob + math.log(class_vocab_probs[word])
-            else:
-                prob = prob + math.log(1 / float(vocab_size + class_total))
 
         return prob
 
@@ -201,12 +200,6 @@ class NaiveBayesMultinomialClassifier:
                 predictions.append(mapping[prediction])
 
         return actual, predictions
-
-def negate(word):
-    if word[0:4] == "NOT_":
-        return word[4:]
-    else:
-        return "NOT_" + word
 
 terminators = {',', '.', '!', ';', ':', '?', '\n'}
 negations = {"not", "no", "never", "n't"}
@@ -271,14 +264,14 @@ def subset(documents, class_name):
 
     return sub_list
 
-with open("train.ft.txt", 'r') as file:
+with open("train.ft.txt", 'r', encoding='utf8') as file:
     train_reviews = tuple(file)
 
-with open("test.ft.txt", 'r') as file:
+with open("test.ft.txt", 'r', encoding='utf8') as file:
     test_reviews = tuple(file)
 
 class_list = ["__label__1", "__label__2"]
-nb_classifier = NaiveBayesBernoulliClassifier()
+nb_classifier = NaiveBayesMultinomialClassifier()
 train_data = dict()
 test_data = dict()
 

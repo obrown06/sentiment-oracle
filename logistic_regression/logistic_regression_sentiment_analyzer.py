@@ -292,14 +292,16 @@ test_texts, test_labels = strip_labels(test_reviews[0:int(len(test_reviews) / 10
 
 ALPHA_VALUES = [0.01, 0.05, 0.1, 0.5, 1, 1.5, 2, 3, 5, 10, 50, 100]
 
-#ALPHA of ~1.5 / 2 is best 
+#ALPHA of ~1.5 / 2 is best
+#LAMBDA of ~1.5 is best
 
 lr_classifier = LogisticRegressionSAClassifier(pre_process(train_texts), train_labels)
 
 for val in ALPHA_VALUES:
-    lr_classifier.ALPHA = val
+    lr_classifier.LAMBDA = val
+
     lr_classifier.train("batch")
-    print("ALPHA: ")
+    print("LAMBDA: ")
     print(val)
     print("Train Set Accuracy:")
     print(lr_classifier.test(train_texts, train_labels))
