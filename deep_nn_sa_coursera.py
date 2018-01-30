@@ -1,15 +1,3 @@
-# Tasks:
-
-# initialize_parameters
-# linear_forward
-# linear_activation_forward
-# forward_prop
-# loss
-# linear_backward
-# linear_activation_backward
-# backward_prop
-# update_parameters
-
 import re
 import numpy as np
 import nltk
@@ -106,143 +94,173 @@ class DeepNet:
     def initialize_params(self, layer_dims):
         """
         Arguments:
-        layer_dims - a python array containing integers specifying the dimension of each layer of the network.
+        layer_dims -- python array (list) containing the dimensions of each layer in our network
 
-        Returns (and stores as a field):
-        A dictionary containing the parameters at each layer of the network:
-                Wl - a numpy array of dimension (layer_dims[l - 1], layer_dims[l]) containing the layer's weights
-                bl - a numpy array of dimension (layer_dims[l]) containing the layer's biases
+        Returns:
+        parameters -- python dictionary containing your parameters "W1", "b1", ..., "WL", "bL":
+                    Wl -- weight matrix of shape (layer_dims[l], layer_dims[l-1])
+                    bl -- bias vector of shape (layer_dims[l], 1)
         """
 
+        np.random.seed(3)
         parameters = {}
+        L = len(layer_dims)            # number of layers in the network
 
-        for l in range(1, len(layer_dims)):
+        for l in range(1, L):
+            ### START CODE HERE ### (≈ 2 lines of code)
             parameters['W' + str(l)] = np.random.randn(layer_dims[l], layer_dims[l - 1]) * 0.01
             parameters['b' + str(l)] = np.zeros((layer_dims[l], 1))
+            ### END CODE HERE ###
 
-        print("starting params")
-        print(parameters)
+            assert(parameters['W' + str(l)].shape == (layer_dims[l], layer_dims[l-1]))
+            assert(parameters['b' + str(l)].shape == (layer_dims[l], 1))
+
+
         return parameters
 
     def linear_forward(self, A, W, b):
         """
+        Implement the linear part of a layer's forward propagation.
+
         Arguments:
-        A - a numpy array containing the previous layer's outputs; dimension (size of previous layer, number of examples)
-        W - a numpy array containing the weights of each node in this layer; dimension (size of current layer, size of previous layer)
-        b - a numpy array containing the biases of each node in this layer; dimension (size of current layer, 1)
+        A -- activations from previous layer (or input data): (size of previous layer, number of examples)
+        W -- weights matrix: numpy array of shape (size of current layer, size of previous layer)
+        b -- bias vector, numpy array of shape (size of the current layer, 1)
 
         Returns:
-        Z - a numpy array containing the linear output of each node; dimension (size of current layer, number of examples)
-        cache - a python dictionary containing A, W, b; stored for later use in backprop
+        Z -- the input of the activation function, also called pre-activation parameter
+        cache -- a python dictionary containing "A", "W" and "b" ; stored for computing the backward pass efficiently
         """
+
+        ### START CODE HERE ### (≈ 1 line of code)
         Z = np.dot(W, A) + b
+        ### END CODE HERE ###
+
+        assert(Z.shape == (W.shape[0], A.shape[1]))
         cache = (A, W, b)
 
         return Z, cache
 
     def linear_activation_forward(self, A_prev, W, b, activation):
         """
+        Implement the forward propagation for the LINEAR->ACTIVATION layer
+
         Arguments:
-        A_prev - a numpy array containing the previous layer's outputs; dimension (size of previous layer, number of examples)
-        W - a numpy array containing the weights of each node in this layer; dimension (size of current layer, size of previous layer)
-        b - a numpy array containing the biases of each node in this layer; dimension (size of current layer, 1)
-        activation - this layer's activation function, stored as a lambda expression
+        A_prev -- activations from previous layer (or input data): (size of previous layer, number of examples)
+        W -- weights matrix: numpy array of shape (size of current layer, size of previous layer)
+        b -- bias vector, numpy array of shape (size of the current layer, 1)
+        activation -- the activation to be used in this layer, stored as a text string: "sigmoid" or "relu"
 
         Returns:
-        Z - a numpy array containing the output of each node after activation; dimension (size of current layer, number of examples)
-        cache - a python dictionary containing the linear cache and the activation cache.
+        A -- the output of the activation function, also called the post-activation value
+        cache -- a python dictionary containing "linear_cache" and "activation_cache";
+             stored for computing the backward pass efficiently
         """
 
-        Z, linear_cache = self.linear_forward(A_prev, W, b)
-
-        if activation == "relu":
-            A, activation_cache = self.relu(Z)
-        else:
-            #print("forward pass before sigmoid, Z is: ", Z)
+        if activation == "sigmoid":
+            # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
+            ### START CODE HERE ### (≈ 2 lines of code)
+            Z, linear_cache = self.linear_forward(A_prev, W, b)
             A, activation_cache = self.sigmoid(Z)
-            #print("forward_pass after sigmoid, A is: ", A)
+            ### END CODE HERE ###
 
+        elif activation == "relu":
+            # Inputs: "A_prev, W, b". Outputs: "A, activation_cache".
+            ### START CODE HERE ### (≈ 2 lines of code)
+            Z, linear_cache = self.linear_forward(A_prev, W, b)
+            A, activation_cache = self.relu(Z)
+            ### END CODE HERE ###
+
+        assert (A.shape == (W.shape[0], A_prev.shape[1]))
         cache = (linear_cache, activation_cache)
 
         return A, cache
 
     def forward_prop(self, X, parameters):
         """
+        Implement forward propagation for the [LINEAR->RELU]*(L-1)->LINEAR->SIGMOID computation
+
         Arguments:
-        X - a numpy array containing the inputs to the network; dimension (size of input layer, number of examples)
-        parameters - a dictionary containing the weights and biases of the network, stored as numpy arrays.
+        X -- data, numpy array of shape (input size, number of examples)
+        parameters -- output of initialize_parameters_deep()
 
         Returns:
-        A - a numpy array containing the outputs of the last layer of the network
-        caches - a python dictionary containing the cached inputs, weights, and biases of every layer in the network.
+        AL -- last post-activation value
+        caches -- list of caches containing:
+                every cache of linear_relu_forward() (there are L-1 of them, indexed from 0 to L-2)
+                the cache of linear_sigmoid_forward() (there is one, indexed L-1)
         """
 
         caches = []
         A = X
-        L = len(parameters) // 2
+        L = len(parameters) // 2                  # number of layers in the neural network
 
+        # Implement [LINEAR -> RELU]*(L-1). Add "cache" to the "caches" list.
         for l in range(1, L):
-            #print("A for layer: ", l)
-            #print(A)
             A_prev = A
-            A, cache = self.linear_activation_forward(A_prev, parameters["W" + str(l)], parameters["b" + str(l)], "relu")
+            ### START CODE HERE ### (≈ 2 lines of code)
+            A, cache = self.linear_activation_forward(A, parameters["W" + str(l)], parameters["b" + str(l)], "relu")
             caches.append(cache)
 
-        AL, cache = self.linear_activation_forward(A, parameters["W" + str(L)], parameters["b" + str(L)], "sigmoid")
+            ### END CODE HERE ###
 
+        # Implement LINEAR -> SIGMOID. Add "cache" to the "caches" list.
+        ### START CODE HERE ### (≈ 2 lines of code)
+        AL, cache = self.linear_activation_forward(A, parameters["W" + str(L)], parameters["b" + str(L)], "sigmoid")
         caches.append(cache)
+
+        ### END CODE HERE ###
+
         assert(AL.shape == (1,X.shape[1]))
 
         return AL, caches
 
     def loss(self, AL, Y):
         """
+        Implement the cost function defined by equation (7).
+
         Arguments:
-        AL - a numpy array containing the predictions of the network; dimension (number of examples, 1)
-        Y - the actual labels of the training set; dimension (number of exmples, 1)
+        AL -- probability vector corresponding to your label predictions, shape (1, number of examples)
+        Y -- true "label" vector (for example: containing 0 if non-cat, 1 if cat), shape (1, number of examples)
 
         Returns:
-        cost - the cross entropy log loss, a scalar
+        cost -- cross-entropy cost
         """
 
         m = Y.shape[0]
 
+        # Compute loss from aL and y.
+        ### START CODE HERE ### (≈ 1 lines of code)
         logprobs = np.multiply(np.log(AL), Y) + np.multiply(np.log(1 - AL), 1 - Y)
-        loss = -1 * np.sum(logprobs) / m
+        cost = -1/m * np.sum(logprobs)
+        ### END CODE HERE ###
 
-        cost = np.squeeze(loss)
+        cost = np.squeeze(cost)      # To make sure your cost's shape is what we expect (e.g. this turns [[17]] into 17).
+        assert(cost.shape == ())
 
         return cost
 
     def linear_backward(self, dZ, cache):
         """
+        Implement the linear portion of backward propagation for a single layer (layer l)
+
         Arguments:
-        dZ - a numpy array containing the derivatives of the linear outputs of the network; dimension (size of layer, number of examples)
-        cache - a python dictionary containing the previous layer's outputs and this layer's weights and biases
+        dZ -- Gradient of the cost with respect to the linear output (of current layer l)
+        cache -- tuple of values (A_prev, W, b) coming from the forward propagation in the current layer
 
         Returns:
-        dA_prev - a numpy array containing the derivatives of this activated outputs of the previous layer; dimension (size of previous layer, number of examples)
-        dW - a numpy array containing the derivatives of the weights of this layer; dimension (size of current layer, size of previous layer)
-        db - a numpy array containing the derivatives of the biases of this layer; dimension (size of current layer, 1)
+        dA_prev -- Gradient of the cost with respect to the activation (of the previous layer l-1), same shape as A_prev
+        dW -- Gradient of the cost with respect to W (current layer l), same shape as W
+        db -- Gradient of the cost with respect to b (current layer l), same shape as b
         """
-        #print("in linear_backward, dZ: ", dZ)
         A_prev, W, b = cache
-        #print("in linear_backward, A_prev", A_prev)
         m = A_prev.shape[1]
-        #print("in linear_backward, dW before division")
-        #print(np.dot(dZ, A_prev.T))
 
-        dW = 1 / m * np.dot(dZ, A_prev.T)
-
-        #print("in linear_backward, dW after division", dW)
-        db = 1 / m * np.sum(dZ, keepdims = True, axis = 1)
-        #print("db before division")
-        #print(np.sum(dZ, keepdims = True, axis = 1))
-        #print("db after division")
-        #print(db)
+        ### START CODE HERE ### (≈ 3 lines of code)
+        dW = 1/m * np.dot(dZ, A_prev.T)
+        db = 1/m * np.sum(dZ, keepdims = True, axis = 1)
         dA_prev = np.dot(W.T, dZ)
-
-        #print("in linear_backward, dA_prev", dA_prev)
+        ### END CODE HERE ###
 
         assert (dA_prev.shape == A_prev.shape)
         assert (dW.shape == W.shape)
@@ -252,30 +270,31 @@ class DeepNet:
 
     def linear_activation_backward(self, dA, cache, activation):
         """
+        Implement the backward propagation for the LINEAR->ACTIVATION layer.
+
         Arguments:
-        dA - a numpy array containing the derivatives of this layer's post-activation outputs; dimension (size of current layer, number of examples)
-        cache - a python dictionary containing the linear and activation caches of this layer
-        activation - a string identifying this layer's activation function
+        dA -- post-activation gradient for current layer l
+        cache -- tuple of values (linear_cache, activation_cache) we store for computing backward propagation efficiently
+        activation -- the activation to be used in this layer, stored as a text string: "sigmoid" or "relu"
 
         Returns:
-        dA_prev - a numpy array containing the derivatives of this activated outputs of the previous layer; dimension (size of previous layer, number of examples)
-        dW - a numpy array containing the derivatives of the weights of this layer; dimension (size of current layer, size of previous layer)
-        db - a numpy array containing the derivatives of the biases of this layer; dimension (size of current layer, 1)
+        dA_prev -- Gradient of the cost with respect to the activation (of the previous layer l-1), same shape as A_prev
+        dW -- Gradient of the cost with respect to W (current layer l), same shape as W
+        db -- Gradient of the cost with respect to b (current layer l), same shape as b
         """
-
         linear_cache, activation_cache = cache
 
         if activation == "relu":
+            ### START CODE HERE ### (≈ 2 lines of code)
             dZ = self.relu_backward(dA, activation_cache)
             dA_prev, dW, db = self.linear_backward(dZ, linear_cache)
+            ### END CODE HERE ###
 
         elif activation == "sigmoid":
-            #print("before backward sigmoid, dA", dA)
-            #print("before backward sigmoid, Z", activation_cache)
+            ### START CODE HERE ### (≈ 2 lines of code)
             dZ = self.sigmoid_backward(dA, activation_cache)
-            #print("after backward sigmoid, dZ: ", dZ)
             dA_prev, dW, db = self.linear_backward(dZ, linear_cache)
-            #print("after linear_backward, dA_prev is: ", dA_prev)
+            ### END CODE HERE ###
 
         return dA_prev, dW, db
 
@@ -302,56 +321,74 @@ class DeepNet:
 
     def backward_prop(self, AL, Y, caches):
         """
+        Implement the backward propagation for the [LINEAR->RELU] * (L-1) -> LINEAR -> SIGMOID group
+
         Arguments:
-        AL - a numpy array containing the outputs generated by the forward pass through the network; dimension (number of examples, 1)
-        Y - the labels of the training data; dimension (number of examples, 1)
-        caches - a python list of the caches stored in the forward pass of the algorithm; length (number of layers)
+        AL -- probability vector, output of the forward propagation (L_model_forward())
+        Y -- true "label" vector (containing 0 if non-cat, 1 if cat)
+        caches -- list of caches containing:
+                every cache of linear_activation_forward() with "relu" (it's caches[l], for l in range(L-1) i.e l = 0...L-2)
+                the cache of linear_activation_forward() with "sigmoid" (it's caches[L-1])
 
         Returns:
-        grads - a python dictionary storing the gradients for the weights, biases, and outputs of each layers
+        grads -- A dictionary with the gradients
+             grads["dA" + str(l)] = ...
+             grads["dW" + str(l)] = ...
+             grads["db" + str(l)] = ...
         """
-
-        #print("AL")
-        #print(AL)
         grads = {}
-        L = len(caches)
+        L = len(caches) # the number of layers
         m = AL.shape[1]
-        Y = Y.reshape(AL.shape)
-        #print("Y", Y)
+        Y = Y.reshape(AL.shape) # after this line, Y is the same shape as AL
+
+        # Initializing the backpropagation
+        ### START CODE HERE ### (1 line of code)
         dAL = - (np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
-        #print("dAL", dAL)
+        ### END CODE HERE ###
+
+        # Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "AL, Y, caches". Outputs: "grads["dAL"], grads["dWL"], grads["dbL"]
+        ### START CODE HERE ### (approx. 2 lines)
         current_cache = caches[L-1]
         grads["dA" + str(L)], grads["dW" + str(L)], grads["db" + str(L)] = self.linear_activation_backward(dAL, current_cache, "sigmoid")
+        ### END CODE HERE ###
 
-        for l in reversed(range(L - 1)):
-            #print("layer ", l)
-            dA = grads["dA" + str(l + 2)]
-            #print("dA", dA)
+        for l in reversed(range(L-1)):
+            # lth layer: (RELU -> LINEAR) gradients.
+            # Inputs: "grads["dA" + str(l + 2)], caches". Outputs: "grads["dA" + str(l + 1)] , grads["dW" + str(l + 1)] , grads["db" + str(l + 1)]
+            ### START CODE HERE ### (approx. 5 lines)
             current_cache = caches[l]
-            grads["dA" + str(l + 1)], grads["dW" + str(l + 1)], grads["db" + str(l + 1)] = self.linear_activation_backward(dA, current_cache, "relu")
-            #print("dW", grads["dW" + str(l + 1)])
-            #print("db", grads["db" + str(l + 1)])
+            dA_prev_temp, dW_temp, db_temp = self.linear_activation_backward(grads["dA" + str(l + 2)], current_cache, "relu")
+            grads["dA" + str(l + 1)] = dA_prev_temp
+            grads["dW" + str(l + 1)] = dW_temp
+            grads["db" + str(l + 1)] = db_temp
+            ### END CODE HERE ###
+
         return grads
 
 
-    def update_parameters(self, params, grads, learning_rate):
+    def update_parameters(self, parameters, grads, learning_rate):
         """
+        Update parameters using gradient descent
+
         Arguments:
-        params - a python dictionary containing the weights and biases of the layers in the network
-        grads - a python dictionary containing the gradients of the weights and biases of the layers in the network.
-        learning_rate - a scalar indicating the learning_rate hyperparameter of the network
+        parameters -- python dictionary containing your parameters
+        grads -- python dictionary containing your gradients, output of L_model_backward
 
         Returns:
-        params - the updated python dictionary of weights and biases
+        parameters -- python dictionary containing your updated parameters
+                  parameters["W" + str(l)] = ...
+                  parameters["b" + str(l)] = ...
         """
 
-        L = len(params) // 2
+        L = len(parameters) // 2 # number of layers in the neural network
 
+        # Update rule for each parameter. Use a for loop.
+        ### START CODE HERE ### (≈ 3 lines of code)
         for l in range(1, L + 1):
-            params["W" + str(l)] = params["W" + str(l)] - learning_rate * grads["dW" + str(l)]
-            params["b" + str(l)] = params["b" + str(l)] - learning_rate * grads["db" + str(l)]
-
-        return params
+            parameters["W" + str(l)] = parameters["W" + str(l)] - learning_rate * grads["dW" + str(l)]
+            parameters["b" + str(l)] = parameters["b" + str(l)] - learning_rate * grads["db" + str(l)]
+        ### END CODE HERE ###
+        return parameters
 
 terminators = {',', '.', '!', ';', ':', '?', '\n'}
 negations = {"not", "no", "never", "n't"}
@@ -550,12 +587,12 @@ input_matrix_test = input_matrix(pre_processed_test_texts, feature_set)
 
 dn = DeepNet()
 layer_dims = [200, 7, 1]
-dn.train(input_matrix_train, np.asarray(train_labels), layer_dims, 1, 50000, "batch")
+dn.train(input_matrix_train, np.asarray(train_labels), layer_dims, 0.01, 50000, "batch")
 
 accuracy, precision, recall, specificity = dn.test(input_matrix_test, np.asarray(test_labels), 0.5)
 
 A = np.array([[-1, -2, -3, -4], [-5, -6, -7, -8]])
-W1 = np.array([[3, 4], [5, 6], [7, 8]]) 
+W1 = np.array([[3, 4], [5, 6], [7, 8]])
 b1 = np.array([1, 2, 3])[:, None]
 W2 = np.array([[5, 6, 7], [8, 9, 10], [11, 12, 13]])
 b2 = np.array([-3, -2, -1])[:, None]
