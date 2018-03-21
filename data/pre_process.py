@@ -49,7 +49,7 @@ def strip_labels(documents, class_names):
 
         for i in range(len(class_names)):
             if class_name == class_names[i]:
-                labels.append(class_names[i])
+                labels.append(i)
                 texts.append(text)
 
     return texts, np.array(labels).T

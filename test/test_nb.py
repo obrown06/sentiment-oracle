@@ -1,6 +1,7 @@
 import sys
 sys.path.insert(0, '../data/')
 sys.path.insert(0, '../classifiers/')
+
 import pre_process
 import naive_bayes
 import math
@@ -25,32 +26,41 @@ with open("test.ft.txt", 'r', encoding='utf8') as file:
 class_names = ["__label__1", "__label__2"]
 
 print("###################################################################")
-print("TESTING NAIVE BAYES")
-print("####################################################################")
-print("Beginning pre_processing.")
+print("TESTING: NAIVE BAYES")
+print("###################################################################")
+print("Pre_processing...")
 
-train_documents, train_labels = pre_process.pre_process(train_reviews[0:int(len(train_reviews) // 50)], class_names)
-test_documents, test_labels = pre_process.pre_process(test_reviews, class_names)
-
-print("Completed pre_processing.")
+train_documents, train_labels = pre_process.pre_process(train_reviews[0:int(len(train_reviews) // 5)], class_names)
+test_documents, test_labels = pre_process.pre_process(test_reviews[0:int(len(test_reviews) // 5)], class_names)
 
 train_data = dict()
 test_data = dict()
 
 for i in range(len(class_names)):
-    train_data[class_names[i]] = subset(train_documents, train_labels, i)
-    test_data[class_names[i]] = subset(test_documents, test_labels, i)
+    train_data[i] = subset(train_documents, train_labels, i)
+    test_data[i] = subset(test_documents, test_labels, i)
 
 nb_classifier = naive_bayes.NaiveBayesMultinomialClassifier()
 
-print("Beginning training")
+print("Training...")
+
 nb_classifier.train(train_data)
-print("Completed training.")
 
-print("Beginning testing.")
-actual, predictions = nb_classifier.test(test_data)
+print("Testing...")
 
-print("Accuracy: ")
-fpr, tpr, thresholds = metrics.roc_curve(actual, predictions, pos_label = 1)
+precision, recall, specificity, accuracy, auc = nb_classifier.test(test_data, pos_label = 1)
 
-print("AUC of predictions: {0}".format(metrics.auc(fpr, tpr)))
+print("####################################################################")
+print("RESULTS:")
+print("Accuracy: ", accuracy)
+print("Precision: ", precision)
+print("Recall: ", recall)
+print("Specificity: ", specificity)
+print("AUC: {0}".format(auc))
+
+print("####################################################################")
+
+
+#fpr, tpr, thresholds = metrics.roc_curve(actual, predictions, pos_label = 1)
+
+#print("AUC: {0}".format(metrics.auc(fpr, tpr)))
