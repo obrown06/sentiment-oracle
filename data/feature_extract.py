@@ -19,10 +19,10 @@ def build_feature_set(documents, NFEATURES, NGRAMS):
         ngrams_list = []
 
         for i in range(len(documents)):
-            document = data[i]
+            document = documents[i]
             ngrams_list.extend(compute_ngrams(document, n + 1))
 
-        fdist = FreqDist(ngram for ngram in ngrams)
+        fdist = FreqDist(ngram for ngram in ngrams_list)
         feature_set[n + 1] = [i[0] for i in fdist.most_common(NFEATURES // NGRAMS)]
 
     return feature_set
@@ -45,6 +45,6 @@ def input_matrix(documents, features, NGRAMS):
     feature_set = []
 
     for document in documents:
-        feature_set.append(doc_features(document, features, NFEATURES, NGRAMS))
+        feature_set.append(doc_features(document, features, NGRAMS))
 
     return np.array(feature_set).T

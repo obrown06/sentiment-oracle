@@ -1,28 +1,138 @@
 import numpy as np
 import utils
 
-class LogisticRegressionSAClassifier:
+class LogisticRegressionClassifier:
 
-    LAMBDA = 1
-    ALPHA = 2
-    NITERATIONS = 2000
-
-    def __init__(self, training_set, training_labels, NITERATIONS):
-        self.training_set = training_set
-        self.training_labels = training_labels
-        self.features = {}
-        self.build_feature_set(training_set)
+    def __init__(self, NITERATIONS = 2000, LAMBDA = 1, ALPHA = 2):
         self.NITERATIONS = NITERATIONS
+        self.LAMBDA = LAMBDA
+        self.ALPHA = ALPHA
 
-    def sigmoid(self, x):
-        return 1 / (1 + np.exp(-x))
+    def train(self, X, Y, method):
+        """
+        Arguments:
+        X : a numpy array of dimension [number of features] x [number of training examples], containing the
+            values of every feature in every document in the training set
+        Y : a numpy array of dimension [number of training examples] x 1, containing the class labels of
+        every document in the training set
+        method : a string indicating the training method to be used
 
-    def predict(self, w, x):
-        A, cache = utils.sigmoid(np.dot(x.T, w))
-        return A
+        Stores:
 
-    def classify(self, w, x):
-        h = self.predict(w, x)
+        self.w : a numpy array of dimension [number of training examples] containing the values of the weights
+                 of the classifier (initialized to zero)
+        """
+        ones = np.ones((1, X.shape[1]))
+        X = np.concatenate((ones, X), axis=0)
+
+        self.w = np.zeros(X.shape[0])
+
+        if method == "batch":
+            self.batch_gradient_descent(X, Y)
+        else:
+            self.stochastic_gradient_descent(X, Y)
+
+    def batch_gradient_descent(self, X, Y):
+        """
+        Arguments:
+        X : a numpy array of dimension [number of features] x [number of training examples], containing the
+            values of every feature in every document in the training set; includes a row of 1s which pair
+            with the w[0] (the bias)
+        Y : a numpy array of dimension [number of training examples] x 1, containing the class labels of
+            every document in the training set
+
+        Stores:
+        self.w : a numpy array of dimension [number of features] x 1, containing the updated values of the
+                 weights after a batch update (performed once per iteration)
+        """
+        for i in range(self.NITERATIONS):
+            h = self.predict(X)
+            grads_w = self.grads(X, Y, h)
+            self.w = self.w - self.ALPHA * grads_w
+
+            if i % 100 == 0:
+                print("loss after iteration ", i, " is: ", self.loss(X, Y, h))
+
+    def grads(self, X, Y, h):
+        """
+        Arguments:
+        X : a numpy array of dimension [number of features] x [number of training examples], containing the
+            values of every feature in every document in the training set; includes a row of 1s which pair
+            with the w[0] (the bias)
+        Y : a numpy array of dimension [number of training examples] x 1, containing the class labels of
+            every document in the training set
+        h : a numpy array of dimension [number of training examples] x 1, containing the class labels predicted
+            by the classifier for each document in the training set
+
+        Returns:
+        grads : a numpy array of dimension [number of features] x 1, containing the gradients to be added to each
+                weight in the classifier. Computed by combining the simple gradients (grads) with a regularization
+                term (reg).
+        """
+        m = X.shape[1]
+        grads = 1 / float(m) * np.dot(X, (h - Y))
+        reg = self.LAMBDA * self.w / float(m)
+        reg[0] = 0
+        grads = grads + reg
+
+        return grads
+
+    def stochastic_gradient_descent(self, X, Y):
+        """
+        Arguments:
+        X : a numpy array of dimension [number of features] x [number of training examples], containing the
+            values of every feature in every document in the training set; includes a row of 1s which pair
+            with the w[0] (the bias)
+        Y : a numpy array of dimension [number of training examples] x 1, containing the class labels of
+            every document in the training set
+
+        Stores:
+        self.w : a numpy array of dimension [number of features] x 1, containing the updated values of the
+                 weights after a stochastic update (performed once per training example)
+        """
+        m = X.shape[1]
+
+        for i in range(self.NITERATIONS):
+            for j in range(m):
+                h = self.predict(X[:,j])
+                grads = (h - Y[j]) * X[:,j]
+                reg = 2 * self.LAMBDA * self.w / float(m)
+                self.w = self.w - self.ALPHA * (grads + reg)
+
+            if i % 100 == 0:
+                #print("X", X)
+                #print("w", self.w)
+                #print("X dot w", np.dot(X.T, self.w))
+                #print("sigmoid()", utils.sigmoid(np.dot(X.T, self.w)))
+                print("loss after iteration ", i, " is: ", self.loss(X, Y, self.predict(X)))
+
+    def loss(self, X, Y, h):
+        """
+        Arguments:
+        X : a numpy array of dimension [number of features] x [number of training examples], containing the
+            values of every feature in every document in the training set; includes a row of 1s which pair
+            with the w[0] (the bias)
+        Y - the actual labels of the training set; dimension (number of exmples, 1)
+        h - a numpy array containing the predictions of the network; dimension (number of examples, 1)
+
+        Returns:
+        loss - a scalar; the cross entropy log loss, with added L2 norm
+        """
+        m = X.shape[1]
+        loss = -1 / float(m) * (np.dot(np.log(h).T, Y) + np.dot(np.log(1 - h).T, 1 - Y))
+        reg = 1 / float(2 * m) * self.LAMBDA * np.dot(self.w.T, self.w)
+        loss = loss + reg
+        return loss
+
+    def test(self, X, Y):
+        ones = np.ones((1, X.shape[1]))
+        X = np.concatenate((ones, X), axis=0)
+
+        h = self.classify(X)
+        return h, Y
+
+    def classify(self, x):
+        h = self.predict(x)
 
         for i in range(len(h)):
             if h[i] >= 0.5:
@@ -32,67 +142,6 @@ class LogisticRegressionSAClassifier:
 
         return h
 
-    def loss(self, x, w, y, h):
-        m = x.shape[1]
-        loss = -1 / float(m) * (np.dot(np.log(h).T, y) + np.dot(np.log(1 - h).T, 1 - y))
-        reg = self.LAMBDA / float(2 * m) * np.dot(w.T, w)
-        return loss - reg
-
-    def grads(self, x, w, y, h):
-        m = x.shape[1]
-        grads = 1 / float(m) * np.dot(x, (h - y))
-
-        reg = self.LAMBDA / float(m) * w
-        reg[0] = 0
-
-        return grads + reg
-
-    def batch_gradient_descent(self, data):
-        for i in range(self.NITERATIONS):
-            h = self.predict(self.w, data)
-            grads = self.grads(data, self.w, self.training_labels, h)
-            self.w = self.w - self.ALPHA * grads
-
-            if i % 100 == 0:
-                print("loss after iteration ", i, " is: ", self.loss(data, self.w, self.training_labels, h))
-
-        print("after training, weights are: ")
-        print(self.w)
-
-    def stochastic_gradient_descent(self, data):
-        print("starting stochastic")
-        m = data.shape[1]
-
-        for i in range(self.NITERATIONS):
-            for j in range(m):
-                grads = (self.predict(self.w, data[:,j]) - self.training_labels[j]) * data[:,j]
-                reg = self.LAMBDA * self.w / float(m)
-                reg[0] = 0
-                self.w = self.w - self.ALPHA * (grads + reg)
-
-            if i % 100 == 0:
-                print("loss after iteration ", i, " is: ", self.loss(data, self.w, self.training_labels, self.predict(self.w, data)))
-
-        print("after training, weights are: ")
-        print(self.w)
-
-    def train(self, method):
-        data_input = self.input_matrix(self.training_set)
-        self.w = np.zeros(self.NFEATURES + 1)
-
-        if method == "batch":
-            self.batch_gradient_descent(data_input)
-        else:
-            self.stochastic_gradient_descent(data_input)
-
-    def test(self, data, labels):
-        data_input = self.input_matrix(data)
-        c = self.classify(self.w, data_input)
-        n_examples = len(labels)
-        n_correct = 0
-
-        for i in range(n_examples):
-            if c[i] == labels[i]:
-                n_correct = n_correct + 1
-
-        return n_correct / float(n_examples)
+    def predict(self, X):
+        A, cache = utils.sigmoid(np.dot(X.T, self.w))
+        return A

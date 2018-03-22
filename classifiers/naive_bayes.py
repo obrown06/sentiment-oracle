@@ -172,7 +172,7 @@ class NaiveBayesBernoulliClassifier:
         class_label  : the (integer) label of a class
         document     : a new document
         default_prob : the update to the prior probability of observing a given class
-                       that we would compute IF the given document contained NONE of
+                       that we would compute IFF the given document contained NONE of
                        the words in the training vocabulary.
 
         Actions: Each time we encounter a new, distinct word in the document
