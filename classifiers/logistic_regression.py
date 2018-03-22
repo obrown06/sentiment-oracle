@@ -125,14 +125,36 @@ class LogisticRegressionClassifier:
         return loss
 
     def test(self, X, Y):
+        """
+        Arguments:
+        X : a numpy array of dimension [number of features] x [number of test examples], containing the
+            values of every feature in every document in the test set; includes a row of 1s which pair
+            with the w[0] (the bias)
+        Y - the actual labels of the test set; dimension (number of exmples, 1)
+
+        Returns:
+        h : a numpy array containing the predicted class labels for each document
+            in the test set (output by self.classify())
+        actual : a numpy array containing the actual class labels for each document in the test set.
+        """
         ones = np.ones((1, X.shape[1]))
         X = np.concatenate((ones, X), axis=0)
 
         h = self.classify(X)
         return h, Y
 
-    def classify(self, x):
-        h = self.predict(x)
+    def classify(self, X):
+        """
+        Arguments:
+        X : a numpy array of dimension [number of features] x [number of examples], containing the
+            values of every feature in every document in the given set; includes a row of 1s which pair
+            with the w[0] (the bias)
+
+        Returns:
+        h : a numpy array containing the predicted class labels for each document
+            in the test set.
+        """
+        h = self.predict(X)
 
         for i in range(len(h)):
             if h[i] >= 0.5:
@@ -143,5 +165,14 @@ class LogisticRegressionClassifier:
         return h
 
     def predict(self, X):
+        """
+        Arguments:
+        X : a numpy array of dimension [number of features] x [number of examples], containing the
+            values of every feature in every document in the given set; includes a row of 1s which pair
+            with the w[0] (the bias)
+
+        Returns:
+        A : the outputs of the classifier applied to the given set of documents
+        """
         A, cache = utils.sigmoid(np.dot(X.T, self.w))
         return A
