@@ -5,6 +5,7 @@ from nltk.corpus import stopwords
 from nltk.util import ngrams
 from nltk.tokenize import word_tokenize
 from nltk.probability import FreqDist
+import utils
 
 class DeepNet:
 
@@ -21,12 +22,10 @@ class DeepNet:
     def classify(self, outputs, threshold):
         outputs[outputs >= threshold] = 1
         outputs[outputs < threshold] = 0
-
         return outputs
 
     def test(self, X, Y, threshold):
         AL, caches = self.forward_prop(X, self.parameters)
-
         predictions = self.classify(AL, threshold)
 
         tp = ((predictions == 1) & (predictions == Y)).sum()
@@ -125,9 +124,9 @@ class DeepNet:
         Z, linear_cache = self.linear_forward(A_prev, W, b)
 
         if activation == "relu":
-            A, activation_cache = self.lrelu(Z)
+            A, activation_cache = utils.lrelu(Z)
         else:
-            A, activation_cache = self.sigmoid(Z)
+            A, activation_cache = utils.sigmoid(Z)
 
         cache = (linear_cache, activation_cache)
 
@@ -230,36 +229,14 @@ class DeepNet:
         linear_cache, activation_cache = cache
 
         if activation == "relu":
-            dZ = self.lrelu_backward(dA, activation_cache)
+            dZ = utils.lrelu_backward(dA, activation_cache)
             dA_prev, dW, db = self.linear_backward(dZ, linear_cache)
 
         elif activation == "sigmoid":
-            dZ = self.sigmoid_backward(dA, activation_cache)
+            dZ = utils.sigmoid_backward(dA, activation_cache)
             dA_prev, dW, db = self.linear_backward(dZ, linear_cache)
 
         return dA_prev, dW, db
-
-    def lrelu(self, Z):
-        A = np.where(Z > 0, Z, 0.1 * Z)
-        return A, Z
-
-    def relu(self, Z):
-        A = np.where(Z > 0, Z, 0)
-        return A, Z
-
-    def sigmoid(self, Z):
-        A = 1 / (1 + np.exp(-Z))
-        return A, Z
-
-    def sigmoid_backward(self, dA, Z):
-        A, cache = self.sigmoid(Z)
-        return np.multiply(dA, np.multiply(A, 1 - A))
-
-    def lrelu_backward(self, dA, Z):
-        return np.multiply(dA, np.where(Z > 0, 1, 0.1))
-
-    def relu_backward(self, dA, Z):
-        return np.multiply(dA, np.where(Z > 0, 1, 0))
 
     def backward_prop(self, AL, Y, caches):
         """

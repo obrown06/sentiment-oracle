@@ -1,4 +1,5 @@
 import numpy as np
+import utils
 
 class LogisticRegressionSAClassifier:
 
@@ -17,7 +18,8 @@ class LogisticRegressionSAClassifier:
         return 1 / (1 + np.exp(-x))
 
     def predict(self, w, x):
-        return self.sigmoid(np.dot(x.T, w))
+        A, cache = utils.sigmoid(np.dot(x.T, w))
+        return A
 
     def classify(self, w, x):
         h = self.predict(w, x)

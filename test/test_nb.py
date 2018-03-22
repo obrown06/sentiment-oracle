@@ -7,7 +7,7 @@ import naive_bayes
 import math
 import io
 import sklearn
-from sklearn import metrics
+import test_utils
 
 def subset(documents, labels, label):
     subset = []
@@ -25,13 +25,13 @@ with open("test.ft.txt", 'r', encoding='utf8') as file:
 
 class_names = ["__label__1", "__label__2"]
 
-print("###################################################################")
-print("TESTING: NAIVE BAYES")
-print("###################################################################")
+print("#################################################################### \n")
+print("TESTING: NAIVE BAYES\n")
+print("####################################################################\n")
 print("Pre_processing...")
 
-train_documents, train_labels = pre_process.pre_process(train_reviews[0:int(len(train_reviews) // 5)], class_names)
-test_documents, test_labels = pre_process.pre_process(test_reviews[0:int(len(test_reviews) // 5)], class_names)
+train_documents, train_labels = pre_process.pre_process(train_reviews[0:int(len(train_reviews) // 1000)], class_names)
+test_documents, test_labels = pre_process.pre_process(test_reviews[0:int(len(test_reviews) // 1000)], class_names)
 
 train_data = dict()
 test_data = dict()
@@ -40,27 +40,24 @@ for i in range(len(class_names)):
     train_data[i] = subset(train_documents, train_labels, i)
     test_data[i] = subset(test_documents, test_labels, i)
 
-nb_classifier = naive_bayes.NaiveBayesMultinomialClassifier()
+nb_classifier = naive_bayes.NaiveBayesBernoulliClassifier()
 
 print("Training...")
 
 nb_classifier.train(train_data)
 
-print("Testing...")
+print("Testing...\n")
 
-precision, recall, specificity, accuracy, auc = nb_classifier.test(test_data, pos_label = 1)
+POS_LABEL = 1
+predictions, actual = nb_classifier.test(test_data)
+precision, recall, specificity, accuracy, auc = test_utils.test_statistics(predictions, actual, POS_LABEL)
 
-print("####################################################################")
-print("RESULTS:")
+print("####################################################################\n")
+print("RESULTS:\n")
 print("Accuracy: ", accuracy)
 print("Precision: ", precision)
 print("Recall: ", recall)
 print("Specificity: ", specificity)
-print("AUC: {0}".format(auc))
+print("AUC: ", auc)
 
 print("####################################################################")
-
-
-#fpr, tpr, thresholds = metrics.roc_curve(actual, predictions, pos_label = 1)
-
-#print("AUC: {0}".format(metrics.auc(fpr, tpr)))
