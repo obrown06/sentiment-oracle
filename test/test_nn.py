@@ -1,21 +1,60 @@
-train_texts, train_labels = strip_labels(test_reviews[0:int(len(train_reviews) // 50)])
-test_texts, test_labels = strip_labels(train_reviews[0:int(len(test_reviews) / 50)])
+import sys
+sys.path.insert(0, '../data/')
+sys.path.insert(0, '../classifiers/')
+import test_utils
+import pre_process
+import deep_net
+import feature_extract
 
-pre_processed_train_texts = pre_process(train_texts)
-pre_processed_test_texts = pre_process(test_texts)
+with open("train.ft.txt", 'r', encoding='utf8') as file:
+    train_reviews = tuple(file)
 
-feature_set = build_feature_set(pre_process(train_texts))
+with open("test.ft.txt", 'r', encoding='utf8') as file:
+    test_reviews = tuple(file)
 
-input_matrix_train = input_matrix(pre_processed_train_texts, feature_set)
-input_matrix_test = input_matrix(pre_processed_test_texts, feature_set)
+class_names = ["__label__1", "__label__2"]
 
-dn = DeepNet()
-layer_dims = [2000, 20, 5, 1]
-dn.train(input_matrix_train, np.asarray(train_labels), layer_dims, 0.5, 3000, "batch")
+print("#################################################################### \n")
+print("TESTING: LOGISTIC REGRESSION\n")
+print("####################################################################\n")
 
-accuracy, precision, recall, specificity = dn.test(input_matrix_test, np.asarray(test_labels), 0.5)
+print("Pre_processing...")
 
-print("accuracy", accuracy)
-print("precision", precision)
-print("recall", recall)
-print("specificity", specificity)
+train_texts, train_labels = pre_process.pre_process(train_reviews[0:int(len(train_reviews) / 1000)], class_names)
+test_texts, test_labels = pre_process.pre_process(test_reviews[0:int(len(train_reviews) / 1000)], class_names)
+
+print("Extracting features...")
+
+NFEATURES = 2000
+NGRAMS = 2
+NITERATIONS = 2000
+ALPHA = 0.5
+LAMBDA = 1
+layer_dims = [NFEATURES, 19, 5, 1]
+
+feature_set = feature_extract.build_feature_set(train_texts, NFEATURES, NGRAMS)
+train_input = feature_extract.input_matrix(train_texts, feature_set, NGRAMS)
+test_input = feature_extract.input_matrix(test_texts, feature_set, NGRAMS)
+
+print("Training...")
+
+nn_classifier = deep_net.DeepNetClassifier(layer_dims, NITERATIONS, LAMBDA, ALPHA)
+nn_classifier.train(train_input, train_labels, "stochastic")
+
+print("Testing...\n")
+
+POS_LABEL = 1
+predictions, actual = nn_classifier.test(test_input, test_labels)
+precision, recall, specificity, accuracy, auc = test_utils.test_statistics(predictions, actual, POS_LABEL)
+
+
+print("####################################################################\n")
+
+print("RESULTS:\n")
+print("Accuracy: ", accuracy)
+print("Precision: ", precision)
+print("Recall: ", recall)
+print("Specificity: ", specificity)
+print("AUC: ", auc)
+
+print("####################################################################")

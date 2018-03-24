@@ -175,7 +175,7 @@ class NaiveBayesBernoulliClassifier:
                        that we would compute IFF the given document contained NONE of
                        the words in the training vocabulary.
 
-        Actions: Each time we encounter a new, distinct word in the document
+        Actions: Each time we encounter a new, distinct word in the given document
         which IS in the training vocabulary, we SUBTRACT the 'absentee' contribution of
         that word to default_prob and ADD the 'presentee' contribution of that word.
 
