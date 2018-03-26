@@ -20,21 +20,23 @@ print("####################################################################\n")
 
 print("Pre_processing...")
 
-train_texts, train_labels = pre_process.pre_process(train_reviews[0:int(len(train_reviews) / 1000)], class_names)
-test_texts, test_labels = pre_process.pre_process(test_reviews[0:int(len(train_reviews) / 1000)], class_names)
+train_texts, train_labels = pre_process.strip_labels_and_clean(train_reviews[0:int(len(train_reviews) / 1000)], class_names)
+test_texts, test_labels = pre_process.strip_labels_and_clean(test_reviews[0:int(len(train_reviews) / 1000)], class_names)
 
 print("Extracting features...")
 
-NFEATURES = 2000
+NFEATURES = 200
 NGRAMS = 2
 NITERATIONS = 2000
 ALPHA = 0.5
 LAMBDA = 1
 layer_dims = [NFEATURES, 19, 5, 1]
 
-feature_set = feature_extract.build_feature_set(train_texts, NFEATURES, NGRAMS)
-train_input = feature_extract.input_matrix(train_texts, feature_set, NGRAMS)
-test_input = feature_extract.input_matrix(test_texts, feature_set, NGRAMS)
+extractor = feature_extract.FeatureExtractor()
+
+feature_set = extractor.build_feature_set(train_texts, NFEATURES, NGRAMS)
+train_input = extractor.extract_features(train_texts, feature_set)
+test_input = extractor.extract_features(test_texts, feature_set)
 
 print("Training...")
 

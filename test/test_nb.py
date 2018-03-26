@@ -31,8 +31,8 @@ print("####################################################################\n")
 
 print("Pre_processing...")
 
-train_documents, train_labels = pre_process.pre_process(train_reviews[0:int(len(train_reviews) // 100)], class_names)
-test_documents, test_labels = pre_process.pre_process(test_reviews[0:int(len(test_reviews) // 100)], class_names)
+train_documents, train_labels = pre_process.strip_labels_and_clean(train_reviews[0:int(len(train_reviews) // 100)], class_names)
+test_documents, test_labels = pre_process.strip_labels_and_clean(test_reviews[0:int(len(test_reviews) // 100)], class_names)
 
 train_data = dict()
 test_data = dict()

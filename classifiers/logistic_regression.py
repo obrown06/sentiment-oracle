@@ -3,7 +3,7 @@ import utils
 
 class LogisticRegressionClassifier:
 
-    def __init__(self, NITERATIONS = 2000, LAMBDA = 1, ALPHA = 2):
+    def __init__(self, NITERATIONS = 2000, LAMBDA = 1, ALPHA = 0.2):
         self.NITERATIONS = NITERATIONS
         self.LAMBDA = LAMBDA
         self.ALPHA = ALPHA

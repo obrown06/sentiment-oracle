@@ -91,6 +91,8 @@ class DeepNetClassifier:
             for j in range(0, m):
                 data_in = np.reshape(X[:,j], (X[:,j].shape[0], 1))
                 label = np.array([Y[j]])
+                print("label", label)
+                print("data_in", data_in)
 
                 AL, caches = self.forward_prop(data_in, parameters)
                 loss = self.loss(AL, label, parameters)
