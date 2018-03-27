@@ -9,7 +9,7 @@ import utils
 
 class DeepNetClassifier:
 
-    def __init__(self, LAYER_DIMS, NITERATIONS = 2000, LAMBDA = 1, ALPHA = 2):
+    def __init__(self, LAYER_DIMS, NITERATIONS = 2000, LAMBDA = 1, ALPHA = 0.2):
         self.NITERATIONS = NITERATIONS
         self.LAMBDA = LAMBDA
         self.ALPHA = ALPHA
@@ -91,8 +91,8 @@ class DeepNetClassifier:
             for j in range(0, m):
                 data_in = np.reshape(X[:,j], (X[:,j].shape[0], 1))
                 label = np.array([Y[j]])
-                print("label", label)
-                print("data_in", data_in)
+                #print("label", label)
+                #print("data_in", data_in)
 
                 AL, caches = self.forward_prop(data_in, parameters)
                 loss = self.loss(AL, label, parameters)

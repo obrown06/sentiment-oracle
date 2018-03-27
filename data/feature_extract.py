@@ -6,7 +6,7 @@ from nltk.probability import FreqDist
 
 class FeatureExtractor:
 
-    def extract_features(self, documents, feature_set, NGRAMS):
+    def extract_features(self, documents, feature_set):
         """
         Arguments:
         documents   : a list of documents whose features we would like to extract
@@ -20,13 +20,13 @@ class FeatureExtractor:
         features = []
 
         for i in range(len(documents)):
-            features.append(self.extract_features_from_document(documents[i], feature_set, NGRAMS))
+            features.append(self.extract_features_from_document(documents[i], feature_set))
 
         features = np.array(features).T
 
         return features
 
-    def extract_features_from_document(self, document, feature_set, NGRAMS):
+    def extract_features_from_document(self, document, feature_set):
         """
         Arguments:
         document    : a document whose features we would like to extract
@@ -40,7 +40,7 @@ class FeatureExtractor:
         all_grams_features = np.array([])
 
 
-        for n in range(NGRAMS):
+        for n in range(len(feature_set)):
             ngrams_to_ranks = feature_set[n + 1]
             curr_gram_features = np.zeros(len(ngrams_to_ranks))
             ngrams = self.compute_ngrams(document, n + 1)
@@ -79,7 +79,9 @@ class FeatureExtractor:
             most_common_ngrams = fdist.most_common(NFEATURES // NGRAMS)
             feature_set[n + 1] = {ngram_info[0] : rank for rank, ngram_info in enumerate(most_common_ngrams)}
 
-        return feature_set
+        self.feature_set = feature_set
+
+        return self.feature_set
 
     def compute_ngrams(self, document, n):
         """
