@@ -75,7 +75,7 @@ def clean(document):
     [cleaned_document] = document_cleaner.clean([document])
     return cleaned_document
 
-#input = '{"document" : "I think she is a liar", "classifiers" : ["naive_bayes", "logistic_regression", "deep_learning"]}'
-#print(invoke_predict(input))
+input = '{"document" : "Generally speaking, I think he did a decent job", "classifiers" : ["naive_bayes", "logistic_regression", "deep_learning"]}'
+print(invoke_predict(input))
 #doc = "this is the worst i dislike"
 #print(invoke_predict_logistic_regression(clean(doc)))
