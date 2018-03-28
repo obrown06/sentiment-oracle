@@ -9,7 +9,7 @@ import pre_process
 
 sentiment_class_map = {0 : "negative", 1 : "positive"}
 
-# take input pd data frame and return class label
+# take input pd data frame and return class
 def predict(model, document):
 	y_pred = model.classify(document)
 	class_label = sentiment_class_map[y_pred]
