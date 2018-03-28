@@ -34,8 +34,8 @@ print("Pre_processing...")
 
 cleaner = pre_process.DocumentCleaner()
 
-train_documents, train_labels = cleaner.strip_labels_and_clean(train_reviews[0:int(len(train_reviews) // 100)], class_names)
-test_documents, test_labels = cleaner.strip_labels_and_clean(test_reviews[0:int(len(test_reviews) // 100)], class_names)
+train_documents, train_labels = cleaner.strip_labels_and_clean(train_reviews[0:int(len(train_reviews) // 10)], class_names)
+test_documents, test_labels = cleaner.strip_labels_and_clean(test_reviews[0:int(len(test_reviews) // 10)], class_names)
 
 train_data = dict()
 test_data = dict()

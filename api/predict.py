@@ -7,17 +7,10 @@ import os
 import pickle
 import pre_process
 
-# take input pd data frame and return dictionary with classificaiton
-def predict_naive_bayes(X_test):
+sentiment_class_map = {0 : "negative", 1 : "positive"}
 
-	# clean X_test
-	doc_cleaner = pre_process.DocumentCleaner()
-	[X_test] = doc_cleaner.clean([X_test])
-
-	model = pickle.load(open("nb_multinomial_classifier.p", 'rb'))
-	sentiment_class_map = {0 : "negative", 1 : "positive"}
-	y_pred = model.classify(X_test)
-	prediction_result = {'Sentiment': sentiment_class_map[y_pred]}
-	return prediction_result
-
-predict("Live it: Still have this works great my food is kept fresh inside the dome, so has a good seal to it.")
+# take input pd data frame and return class label
+def predict(model, document):
+	y_pred = model.classify(document)
+	class_label = sentiment_class_map[y_pred]
+	return class_label

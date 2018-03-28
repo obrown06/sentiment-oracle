@@ -139,40 +139,36 @@ class LogisticRegressionClassifier:
         """
         ones = np.ones((1, X.shape[1]))
         X = np.concatenate((ones, X), axis=0)
+        h = np.array([])
 
-        h = self.classify(X)
+        for i in range(X.shape[1]):
+            doc_data = X[:,i].reshape(X[:,i].shape[0], 1)
+            h = np.append(h, self.classify(doc_data))
+
         return h, Y
 
-    def classify(self, X):
+    def classify(self, data):
         """
         Arguments:
-        X : a numpy array of dimension [number of features] x [number of examples], containing the
-            values of every feature in every document in the given set; includes a row of 1s which pair
-            with the w[0] (the bias)
+        data     : a numpy array of dimension [number of features] x [1], containing the
+                   values of every feature in a single document; includes a row of 1s which pair
+                   with the w[0] (the bias)
 
         Returns:
-        h : a numpy array containing the predicted class labels for each document
-            in the test set.
+        h : a scalar containing the predicted class label for the given document
         """
-        h = self.predict(X)
+        class_label = 1 if self.predict(data) >= 0.5 else 0
+        return class_label
 
-        for i in range(len(h)):
-            if h[i] >= 0.5:
-                h[i] = 1
-            else:
-                h[i] = 0
+    def predict(self, data):
+        """
+        Arguments:
+        data     : a numpy array of dimension [number of features] x [1], containing the
+                   values of every feature in a single document; includes a row of 1s which pair
+                   with the w[0] (the bias)
 
+        Returns:
+        A : the output of the classifier when applied to the given set of data
+        """
+        h, cache = utils.sigmoid(np.dot(data.T, self.w))
         return h
-
-    def predict(self, X):
-        """
-        Arguments:
-        X : a numpy array of dimension [number of features] x [number of examples], containing the
-            values of every feature in every document in the given set; includes a row of 1s which pair
-            with the w[0] (the bias)
-
-        Returns:
-        A : the outputs of the classifier applied to the given set of documents
-        """
-        A, cache = utils.sigmoid(np.dot(X.T, self.w))
-        return A

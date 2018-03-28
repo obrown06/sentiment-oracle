@@ -145,7 +145,7 @@ class NaiveBayesBernoulliClassifier:
     def classify(self, document, default_prob):
         """
         Arguments:
-        document     : a document
+        document : a list of strings containing the words in a given document
         default_prob : the update to the prior probability of observing
                        the given class resulting from a document containing NO words in the
                        training vocabulary.
@@ -170,7 +170,7 @@ class NaiveBayesBernoulliClassifier:
         """
         Arguments:
         class_label  : the (integer) label of a class
-        document     : a new document
+        document : a list of strings containing the words in a document
         default_prob : the update to the prior probability of observing a given class
                        that we would compute IFF the given document contained NONE of
                        the words in the training vocabulary.
@@ -398,7 +398,7 @@ class NaiveBayesMultinomialClassifier:
     def classify(self, document):
         """
         Arguments:
-        document : a document whose class we want to determine
+        document : a list of strings containing the words in a document
 
         Returns:
         most_likely_class_label : the class label in self.labels which results in the highest
@@ -420,7 +420,7 @@ class NaiveBayesMultinomialClassifier:
         """
         Arguments:
         class_label  : the (integer) label of a class
-        document     : a new document
+        document : a list of strings containing the words in a documnet
 
         Returns:
         prob : a proxy for the probability that the given document is a

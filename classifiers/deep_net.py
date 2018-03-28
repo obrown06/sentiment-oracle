@@ -147,7 +147,6 @@ class DeepNetClassifier:
         AL, cache = self.linear_activation_forward(A, parameters["W" + str(L)], parameters["b" + str(L)], "sigmoid")
 
         caches.append(cache)
-        #print("shape",X.shape)
         assert(AL.shape == (1,X.shape[1]))
 
         return AL, caches
@@ -327,22 +326,37 @@ class DeepNetClassifier:
                       in the test set (mapped by self.classify())
         Y : a numpy array containing the actual class labels for each document in the test set
         """
-        AL, caches = self.forward_prop(X, self.parameters)
-        AL = AL.reshape(Y.shape)
-        predictions = self.classify(AL, 0.5)
+        predictions = np.array([])
+
+        for i in range(X.shape[1]):
+            doc_data = X[:,i].reshape(X[:,i].shape[0], 1)
+            predictions = np.append(predictions,self.classify(doc_data))
+
+        predictions = predictions.reshape(Y.shape)
 
         return predictions, Y
 
-    def classify(self, outputs, threshold):
+    def classify(self, data):
         """
         Arguments:
-        outputs : a numpy array containing the set of scalars output by forward_prop
-        threshold : the classification decision boundary
+        data     : a numpy array of dimension [number of features] x [1], containing the
+                   values of every feature in a single document
 
         Returns:
-        outputs : a numpy array containing the class labels to which the outputs are mapped
+        class_label : the (integer) label of the assigned class
         """
-        outputs[outputs >= threshold] = 1
-        outputs[outputs < threshold] = 0
 
-        return outputs
+        class_label = 1 if self.predict(data) >= 0.5 else 0
+        return class_label
+
+    def predict(self, data):
+        """
+        Arguments:
+        data     : a numpy array of dimension [number of features] x [1], containing the
+                   values of every feature in a single document
+
+        Returns:
+        h : the output of the classifier when applied to the given set of data
+        """
+        [[h]] = self.forward_prop(data, self.parameters)[0]
+        return h

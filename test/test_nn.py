@@ -23,22 +23,22 @@ print("Pre_processing...")
 
 cleaner = pre_process.DocumentCleaner()
 
-train_texts, train_labels = cleaner.strip_labels_and_clean(train_reviews[0:int(len(train_reviews) / 10000)], class_names)
-test_texts, test_labels = cleaner.strip_labels_and_clean(test_reviews[0:int(len(test_reviews) / 10000)], class_names)
+train_texts, train_labels = cleaner.strip_labels_and_clean(train_reviews[0:int(len(train_reviews) / 100)], class_names)
+test_texts, test_labels = cleaner.strip_labels_and_clean(test_reviews[0:int(len(test_reviews) / 100)], class_names)
 
 print("Extracting features...")
 
 NFEATURES = 2000
 NGRAMS = 2
 NITERATIONS = 3000
-ALPHA = 1
+ALPHA = 0.1
 LAMBDA = 1
-layer_dims = [NFEATURES, 4000, 500, 50, 5, 1]
+layer_dims = [NFEATURES, 20, 5, 1]
 
 extractor = feature_extract.FeatureExtractor()
 feature_set = extractor.build_feature_set(train_texts, NFEATURES, NGRAMS)
 
-pickle.dump(extractor, open("../data/extractor.p", "wb"))
+pickle.dump(extractor, open("../data/nn_extractor.p", "wb"))
 
 train_input = extractor.extract_features(train_texts, feature_set)
 test_input = extractor.extract_features(test_texts, feature_set)
