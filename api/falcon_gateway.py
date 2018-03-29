@@ -8,34 +8,41 @@ class InfoResource(object):
     def on_get(self, req, resp):
         """Handles GET requests"""
         resp.status = falcon.HTTP_200  # This is the default status
-        resp.body = ('\nThis is an API for a set of deployed sentiment analysis models  '
-                     'which intake a text string and return its sentiment (positive or negative)\n'
-                     'To learn more about this model, send a GET request to the /predicts endpoint.')
+        resp.body = ('\nThis is an API for Nick\'s collection \n'
+                     'of deployed sentiment classifiers. \n'
+                     'Each of these intake a text string and return \n'
+                     'the sentiment ("positive" or "negative") which \n'
+                     'it expresses. To learn more about this model, \n'
+                     'send a GET request to the /predicts endpoint.')
 
 
 class PredictsResource(object):
     def on_get(self, req, resp):
         """Handles GET requests"""
         resp.status = falcon.HTTP_200  # This is the default status
-        resp.body = ('\nThis is the PREDICT endpoint for Sentiment Analysis Classifier. \n'
-        			 'Both requests and responses are served in JSON. \n'
-        		     '\n'
-        		     'INPUT:  JSON dict containing string for classification \n'
-                     '        classification and list of zero or more names \n'
+        resp.body = ('\nThis is the PREDICT endpoint for Nick\'s collection of \n'
+                     'sentiment classifiers. Both requests and responses are served in JSON. \n\n'
+        		     'INPUT:  JSON dict containing 1) string for classification \n'
+                     '        classification and 2) list of zero or more names \n'
                      '        of requested classifiers. \n\n'
-                     'Allowed classifier names are as follows: \n'
-                     '        \'naive_bayes\' \n'
-                     '        \'logistic_regression\' \n'
-                     '        \'deep_learning\' \n\n'
+                     'Allowed classifier names are as follows: \n\n'
+                     ' 1 :       \'naive_bayes\' \n'
+                     ' 2 :       \'logistic_regression\' \n'
+                     ' 3 :       \'deep_learning\' \n\n'
+
+                     'Each classifier outputs one of two sentiment class names: \n\n'
+                     ' 1 :       \'negative\'   \n'
+                     ' 2 :       \'positive\'   \n\n'
+
                      'Example: \n'
 
-                     '{"document": [string], "classifiers" : ["naive_bayes", "logistic_regression", ...]  \n\n'
+                     '{"document": "I hate this", "classifiers" : {"naive_bayes", "logistic_regression"}  \n\n'
 
         		     'OUTPUT: JSON dict mapping all unique POSTed \n'
                      '        classifier names to the classes returned \n'
                      '        by the associated classifier. \n\n'
                      'Example: \n'
-                     '{"naive_bayes": [string], "logistic_regression": [string], ... }  \n\n')
+                     '{"naive_bayes": "negative", "logistic_regression": "negative"}  \n\n')
 
     def on_post(self, req, resp):
         """Handles POST requests"""
