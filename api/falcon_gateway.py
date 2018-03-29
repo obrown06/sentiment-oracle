@@ -22,26 +22,32 @@ class PredictsResource(object):
         resp.status = falcon.HTTP_200  # This is the default status
         resp.body = ('\nThis is the PREDICT endpoint for Nick\'s collection of \n'
                      'sentiment classifiers. Both requests and responses are served in JSON. \n\n'
-        		     'INPUT:  JSON dict containing 1) string for classification \n'
-                     '        classification and 2) list of zero or more names \n'
-                     '        of requested classifiers. \n\n'
-                     'Allowed classifier names are as follows: \n\n'
+
+                     'The classifiers available for use are as follows: \n\n'
                      ' 1 :       \'naive_bayes\' \n'
                      ' 2 :       \'logistic_regression\' \n'
                      ' 3 :       \'deep_learning\' \n\n'
 
-                     'Each classifier outputs one of two sentiment class names: \n\n'
+                     'Each classifier intakes a string and outputs one of two sentiment class names: \n\n'
                      ' 1 :       \'negative\'   \n'
                      ' 2 :       \'positive\'   \n\n'
 
-                     'Example: \n'
+        		     'JSON REQUEST:  JSON dict containing 1) string for classification \n'
+                     '               classification and 2) list of zero or more names \n'
+                     '               of requested classifiers. \n\n'
 
+                     'JSON RESPONSE: JSON dict mapping all unique POSTed \n'
+                     '               classifier names to the classes returned \n'
+                     '               by the associated classifier. \n\n'
+
+                     'You can POST to this endpoint from terminal using the following command:\n\n'
+                     'curl -H "Content-Type: application/json" -X POST -d \'{\"document\": \"STRING WHICH YOU WISH TO CLASSIFY\", \"classifiers\" : [\"name1\", \"name2\"] }\' http://api.nlp-sentiment.com/predicts \n\n'
+
+                     'Example: \n\n'
+
+                     'JSON REQUEST:\n'
                      '{"document": "I hate this", "classifiers" : {"naive_bayes", "logistic_regression"}  \n\n'
-
-        		     'OUTPUT: JSON dict mapping all unique POSTed \n'
-                     '        classifier names to the classes returned \n'
-                     '        by the associated classifier. \n\n'
-                     'Example: \n'
+                     'JSON RESPONSE: \n'
                      '{"naive_bayes": "negative", "logistic_regression": "negative"}  \n\n')
 
     def on_post(self, req, resp):
