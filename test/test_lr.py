@@ -31,25 +31,24 @@ print("Extracting features...")
 NFEATURES = 2000
 NGRAMS = 2
 
-extractor = feature_extract.FeatureExtractor()
+with open('../data/lr_extractor.p', 'rb') as pickle_file:
+    extractor = pickle.load(pickle_file)
 
-print("len", len(train_texts))
+feature_set = extractor.feature_set
 
-feature_set = extractor.build_feature_set(train_texts, NFEATURES, NGRAMS)
+#pickle.dump(extractor, open("../data/lr_extractor.p", "wb"))
 
-pickle.dump(extractor, open("../data/lr_extractor.p", "wb"))
-
-train_input = extractor.extract_features(train_texts, feature_set)
+#train_input = extractor.extract_features(train_texts, feature_set)
 test_input = extractor.extract_features(test_texts, feature_set)
 
-print("train_input shape", train_input.shape)
+#print("train_input shape", train_input.shape)
 
 print("Training...")
 
 lr_classifier = logistic_regression.LogisticRegressionClassifier(NITERATIONS = 3000)
-lr_classifier.train(train_input, train_labels, "batch")
+#lr_classifier.train(train_input, train_labels, "batch")
 
-pickle.dump(lr_classifier, open("../classifiers/lr_classifier.p", "wb"))
+#pickle.dump(lr_classifier, open("../classifiers/lr_classifier.p", "wb"))
 
 print("Testing...\n")
 

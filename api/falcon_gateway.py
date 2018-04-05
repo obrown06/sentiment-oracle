@@ -3,6 +3,7 @@ import falcon
 import json
 import pickle
 from data_handler import invoke_predict
+from falcon_cors import CORS
 
 class InfoResource(object):
     def on_get(self, req, resp):
@@ -17,6 +18,7 @@ class InfoResource(object):
 
 
 class PredictsResource(object):
+    cors = public_cors
     def on_get(self, req, resp):
         """Handles GET requests"""
         resp.status = falcon.HTTP_200  # This is the default status
@@ -36,9 +38,9 @@ class PredictsResource(object):
                      '               classification and 2) list of zero or more names \n'
                      '               of requested classifiers. \n\n'
 
-                     'JSON RESPONSE: JSON dict mapping all unique POSTed \n'
-                     '               classifier names to the classes returned \n'
-                     '               by the associated classifier. \n\n'
+                     'JSON RESPONSE: JSON dict containing all unique POSTed names which \n'
+                     '               are also valid classifier names, along with the classes \n'
+                     '               returned by the associated classifiers. \n\n'
 
                      'You can POST to this endpoint from terminal using the following command:\n\n'
                      'curl -H "Content-Type: application/json" -X POST -d \'{\"document\": \"STRING WHICH YOU WISH TO CLASSIFY\", \"classifiers\" : [\"name1\", \"name2\"] }\' http://api.nlp-sentiment.com/predicts \n\n'
@@ -46,9 +48,9 @@ class PredictsResource(object):
                      'Example: \n\n'
 
                      'JSON REQUEST:\n'
-                     '{"document": "I hate this", "classifiers" : {"naive_bayes", "logistic_regression"}  \n\n'
+                     '{"document": "I hate this", "classifiers" : {"naive_bayes", "logistic_regression", "deep_learning"}  \n\n'
                      'JSON RESPONSE: \n'
-                     '{"naive_bayes": "negative", "logistic_regression": "negative"}  \n\n')
+                     '{"naive_bayes": "negative", "logistic_regression": "negative", "deep_learning" : "negative"}  \n\n')
 
     def on_post(self, req, resp):
         """Handles POST requests"""
@@ -71,7 +73,8 @@ class PredictsResource(object):
         resp.body = json.dumps(invoke_predict(raw_json))
 
 # falcon.API instances are callable WSGI apps. Never change this.
-app = application = falcon.API()
+cors = CORS(allow_origins_list=['http://localhost:8000'])
+app = application = falcon.API(middleware=[cors.middleware])
 
 # Resources are represented by long-lived class instances. Each Python class becomes a different "URL directory"
 info = InfoResource()

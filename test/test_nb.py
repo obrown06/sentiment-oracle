@@ -34,14 +34,14 @@ print("Pre_processing...")
 
 cleaner = pre_process.DocumentCleaner()
 
-train_documents, train_labels = cleaner.strip_labels_and_clean(train_reviews[0:int(len(train_reviews) // 10)], class_names)
+#train_documents, train_labels = cleaner.strip_labels_and_clean(train_reviews[0:int(len(train_reviews) // 10)], class_names)
 test_documents, test_labels = cleaner.strip_labels_and_clean(test_reviews[0:int(len(test_reviews) // 10)], class_names)
 
 train_data = dict()
 test_data = dict()
 
 for i in range(len(class_names)):
-    train_data[i] = subset(train_documents, train_labels, i)
+#    train_data[i] = subset(train_documents, train_labels, i)
     test_data[i] = subset(test_documents, test_labels, i)
 
 nb_bernoulli_classifier = naive_bayes.NaiveBayesBernoulliClassifier()
@@ -49,11 +49,11 @@ nb_multinomial_classifier = naive_bayes.NaiveBayesMultinomialClassifier()
 
 print("Training...")
 
-nb_bernoulli_classifier.train(train_data)
-nb_multinomial_classifier.train(train_data)
+#nb_bernoulli_classifier.train(train_data)
+#nb_multinomial_classifier.train(train_data)
 
-pickle.dump(nb_bernoulli_classifier, open("../classifiers/nb_bernoulli_classifier.p", "wb"))
-pickle.dump(nb_multinomial_classifier, open("../classifiers/nb_multinomial_classifier.p", "wb"))
+#pickle.dump(nb_bernoulli_classifier, open("../classifiers/nb_bernoulli_classifier.p", "wb"))
+#pickle.dump(nb_multinomial_classifier, open("../classifiers/nb_multinomial_classifier.p", "wb"))
 
 print("Testing...\n")
 
