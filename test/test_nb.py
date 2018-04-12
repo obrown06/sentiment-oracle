@@ -9,6 +9,7 @@ import io
 import sklearn
 import test_utils
 import pickle
+import json
 
 def subset(documents, labels, label):
     subset = []
@@ -18,13 +19,27 @@ def subset(documents, labels, label):
 
     return subset
 
-with open("train.ft.txt", 'r', encoding='utf8') as file:
-    train_reviews = tuple(file)
+print("#################################################################### \n")
+print("LOADING FROM FILE: NAIVE BAYES\n")
+print("####################################################################\n")
 
-with open("test.ft.txt", 'r', encoding='utf8') as file:
-    test_reviews = tuple(file)
+train_documents = []
+train_labels = []
 
-class_names = ["__label__1", "__label__2"]
+with open("review.json", 'r', encoding='utf8') as file:
+    for i, line in enumerate(file):
+        if i == 2000000:
+            break
+        data = json.loads(line)
+        train_documents.append(data["text"])
+        train_labels.append(data["stars"])
+
+test_documents = train_documents[-400000:]
+test_labels = train_labels[-400000:]
+train_documents = train_documents[0:3600000]
+train_labels = train_labels[0:3600000]
+
+class_names = [1, 2, 3, 4, 5]
 
 print("#################################################################### \n")
 print("TESTING: NAIVE BAYES\n")
@@ -34,15 +49,18 @@ print("Pre_processing...")
 
 cleaner = pre_process.DocumentCleaner()
 
-#train_documents, train_labels = cleaner.strip_labels_and_clean(train_reviews[0:int(len(train_reviews) // 10)], class_names)
-test_documents, test_labels = cleaner.strip_labels_and_clean(test_reviews[0:int(len(test_reviews) // 10)], class_names)
+train_documents = cleaner.clean(train_documents[0:int(len(train_documents) // 1000)])
+test_documents = cleaner.clean(test_documents[0:int(len(test_documents) // 1000)])
+
+train_labels = train_labels[0:int(len(train_labels) // 1000)]
+test_labels = test_labels[0:int(len(test_labels) // 1000)]
 
 train_data = dict()
 test_data = dict()
 
 for i in range(len(class_names)):
-#    train_data[i] = subset(train_documents, train_labels, i)
-    test_data[i] = subset(test_documents, test_labels, i)
+    train_data[i] = subset(train_documents, train_labels, class_names[i])
+    test_data[i] = subset(test_documents, test_labels, class_names[i])
 
 nb_bernoulli_classifier = naive_bayes.NaiveBayesBernoulliClassifier()
 nb_multinomial_classifier = naive_bayes.NaiveBayesMultinomialClassifier()
@@ -66,29 +84,36 @@ with open('../classifiers/nb_multinomial_classifier.p', 'rb') as pickle_file:
 POS_LABEL = 1
 predictions, actual = nb_bernoulli_classifier_from_file.test(test_data)
 precision, recall, specificity, accuracy, auc = test_utils.test_statistics(predictions, actual, POS_LABEL)
+accuracy, near_accuracy, accurate_polarity = test_utils.multiclass_accuracy(predictions, actual)
 
 print("####################################################################\n")
 
 print("RESULTS (Bernoulli): \n")
 print("Accuracy: ", accuracy)
-print("Precision: ", precision)
-print("Recall: ", recall)
-print("Specificity: ", specificity)
-print("AUC: ", auc)
+print("Near Accuracy: ", near_accuracy)
+print("Accurate Polarity: ", accurate_polarity)
+#print("Precision: ", precision)
+#print("Recall: ", recall)
+#print("Specificity: ", specificity)
+#print("AUC: ", auc)
 
 print("####################################################################")
 
 POS_LABEL = 1
 predictions, actual = nb_multinomial_classifier_from_file.test(test_data)
 precision, recall, specificity, accuracy, auc = test_utils.test_statistics(predictions, actual, POS_LABEL)
+accuracy, near_accuracy, accurate_polarity = test_utils.multiclass_accuracy(predictions, actual)
 
 print("####################################################################\n")
 
 print("RESULTS (Multinomial): \n")
 print("Accuracy: ", accuracy)
-print("Precision: ", precision)
-print("Recall: ", recall)
-print("Specificity: ", specificity)
-print("AUC: ", auc)
+print("Near Accuracy: ", near_accuracy)
+print("Accurate Polarity: ", accurate_polarity)
+
+#print("Precision: ", precision)
+#print("Recall: ", recall)
+#print("Specificity: ", specificity)
+#print("AUC: ", auc)
 
 print("####################################################################")

@@ -1,3 +1,9 @@
 /test/test.ft.txt
 /test/train.ft.txt
+/test/review.json
+/classifiers/nb_multinomial_classifier.p
+/classifiers/nb_bernoulli_classifier.p
+/test/glove.42B.300d.txt
+/test/glove.42B.300d.zip
+
 venv/

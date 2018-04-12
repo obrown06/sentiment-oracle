@@ -53,6 +53,8 @@ class NaiveBayesBernoulliClassifier:
 
         for class_label, documents in classes_to_docs.items():
             num_class_docs = len(documents)
+            print("class_label: " + str(class_label))
+            print("number of docs in class: " + str(len(documents)))
             priors[class_label] = num_class_docs
             total = total + num_class_docs
 
@@ -426,6 +428,7 @@ class NaiveBayesMultinomialClassifier:
         prob : a proxy for the probability that the given document is a
                member of the given class (to be compared with others in the self.classify())
         """
+
         class_total = self.class_vocab_totals[class_label]
         prob = math.log(self.priors[class_label])
         class_vocab_probs = self.vocab_probs[class_label]

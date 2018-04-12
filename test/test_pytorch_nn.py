@@ -8,9 +8,10 @@ import bow_extractor
 import pickle
 import json
 import numpy as np
+import pytorch_feed_forward
 
 print("#################################################################### \n")
-print("LOADING FROM FILE: FEED FORWARD\n")
+print("LOADING FROM FILE: PYTORCH FEED FORWARD\n")
 print("####################################################################\n")
 
 train_documents = []
@@ -18,19 +19,19 @@ train_labels = []
 
 with open("review.json", 'r', encoding='utf8') as file:
     for i, line in enumerate(file):
-        if i == 100000:
+        if i == 1000000:
             break
         data = json.loads(line)
         train_documents.append(data["text"])
         train_labels.append(data["stars"])
 
-test_documents = train_documents[-10000:]
-test_labels = train_labels[-10000:]
-train_documents = train_documents[0:90000]
-train_labels = train_labels[0:90000]
+test_documents = train_documents[-100000:]
+test_labels = train_labels[-100000:]
+train_documents = train_documents[0:900000]
+train_labels = train_labels[0:900000]
 
 print("#################################################################### \n")
-print("TRAINING: FEED FORWARD\n")
+print("TRAINING: PYTORCH FEED FORWARD\n")
 print("#################################################################### \n")
 
 print("Pre_processing...")
@@ -51,12 +52,7 @@ NGRAMS = 2
 extractor = bow_extractor.FeatureExtractor()
 feature_set = extractor.build_feature_set(train_documents, NFEATURES, NGRAMS)
 
-#with open('../data/nn_extractor.p', 'rb') as pickle_file:
-#    extractor = pickle.load(pickle_file)
-
-#feature_set = extractor.feature_set
-
-pickle.dump(extractor, open("../data/nn_extractor.p", "wb"))
+pickle.dump(extractor, open("../data/pytorch_ff_extractor.p", "wb"))
 
 train_input = extractor.extract_features(train_documents, feature_set)
 test_input = extractor.extract_features(test_documents, feature_set)
@@ -64,31 +60,35 @@ class_list = [1, 2, 3, 4, 5]
 train_label_input = np.array(train_labels)
 test_label_input = np.array(test_labels)
 
+train_label_input = train_label_input - 1
+test_label_input = test_label_input - 1
+
 print("Training...")
 
-NITERATIONS = 5000
-ALPHA = 0.01
-LAMBDA = 0.5
-layer_dims = [NFEATURES, 200, 5]
+# Alpha = 0.001 and NEPOCHS = 200 and NBATCHES = 50 and optim = SGD gives 0.675 accuracy, 0.8515 polarity, 0.93 near accuracy
+
+NEPOCHS = 200
+ALPHA = 0.001
+NBATCHES = 50
+input_dim = NFEATURES
+hidden_dim = 200
+output_dim = 5
 class_list = [1, 2, 3, 4, 5]
 
-print("Training...")
+pytorch_net = pytorch_feed_forward.FeedForwardClassifier(input_dim, hidden_dim, output_dim)
+pytorch_feed_forward.train(pytorch_net, train_input, train_label_input, ALPHA, NEPOCHS, NBATCHES)
 
-nn_classifier = deep_net.DeepNetClassifier(class_list, layer_dims, NITERATIONS, LAMBDA, ALPHA)
-nn_classifier.train(train_input, train_label_input, "batch")
-
-pickle.dump(nn_classifier, open("../classifiers/nn_classifier.p", "wb"))
+pickle.dump(pytorch_net, open("../classifiers/pytorch_ff_classifier.p", "wb"))
 
 print("Testing...\n")
 
-with open('../classifiers/nn_classifier.p', 'rb') as pickle_file:
-    nn_classifier_from_file = pickle.load(pickle_file)
+with open('../classifiers/pytorch_ff_classifier.p', 'rb') as pickle_file:
+    pytorch_classifier = pickle.load(pickle_file)
 
-POS_LABEL = 1
-predictions, actual = nn_classifier_from_file.test(test_input, test_label_input)
+predictions, actual = pytorch_feed_forward.test(pytorch_net, class_list, test_input, test_label_input + 1)
 print("predictions: ", predictions)
 print("actual", actual)
-#precision, recall, specificity, accuracy, auc = test_utils.test_statistics(predictions, actual, POS_LABEL)
+
 accuracy, near_accuracy, accurate_polarity = test_utils.multiclass_accuracy(predictions, actual)
 
 print("####################################################################\n")
@@ -97,10 +97,5 @@ print("RESULTS:\n")
 print("Accuracy: ", accuracy)
 print("Near Accuracy: ", near_accuracy)
 print("Accurate Polarity: ", accurate_polarity)
-
-# print("Precision: ", precision)
-# print("Recall: ", recall)
-# print("Specificity: ", specificity)
-# print("AUC: ", auc)
 
 print("####################################################################")

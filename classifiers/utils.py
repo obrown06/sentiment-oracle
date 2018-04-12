@@ -21,3 +21,21 @@ def lrelu_backward(dA, Z):
 
 def relu_backward(dA, Z):
     return np.multiply(dA, np.where(Z > 0, 1, 0))
+
+def softmax(Z):
+    max = np.amax(Z, axis=1)
+    Z = Z - max.reshape((max.shape[0], 1))
+    num = np.exp(Z)
+    denom = np.sum(num, axis = 1)
+    return num / denom.reshape((denom.shape[0], 1)), Z
+
+def nn_softmax(Z):
+    max = np.amax(Z, axis=0)
+    Z = Z - max.reshape((1, max.shape[0]))
+    num = np.exp(Z)
+    denom = np.sum(num, axis = 0)
+    return num / denom.reshape((1, denom.shape[0])), Z
+
+def softmax_backward(dA, Z):
+
+    return 0

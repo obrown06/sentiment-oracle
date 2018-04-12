@@ -3,6 +3,20 @@ import numpy as np
 import sklearn
 from sklearn import metrics
 
+def multiclass_accuracy(predictions, actual):
+    predictions = np.asarray(predictions)
+    actual = np.asarray(actual)
+
+    correct = ((predictions == actual)).sum()
+    incorrect = ((predictions != actual)).sum()
+    near_correct = ((predictions == actual) | (predictions == actual + 1) | (predictions == actual - 1)).sum()
+    near_incorrect = ((predictions != actual) & (predictions != actual + 1) & (predictions != actual - 1)).sum()
+
+    correct_polarity = (((predictions < 3) & (actual < 3)) | ((predictions > 3) & (actual > 3)) | ((predictions == 3) & (actual == 3))).sum()
+    incorrect_polarity = (((predictions < 3) & (actual >= 3)) | ((predictions > 3) & (actual <= 3)) | ((predictions == 3) & (actual != 3))).sum()
+
+    return correct / (correct + incorrect), near_correct / (near_correct + near_incorrect), correct_polarity / (correct_polarity + incorrect_polarity)
+
 
 def test_statistics(predictions, actual, pos_label):
     predictions = np.asarray(predictions)

@@ -63,7 +63,7 @@ class DocumentCleaner:
             document = self.replace_neg_contractions(document);
             word_list = document.split(' ')
             self.remove_null_words(word_list)
-            self.add_negations(word_list)
+            #self.add_negations(word_list)
             self.remove_terminators(word_list)
             #remove_stop_words(word_list)
             documents[i] = " ".join(word_list)
