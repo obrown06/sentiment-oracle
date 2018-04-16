@@ -108,6 +108,7 @@ def load_data(n_samples, start_index, path_to_data):
             document = line[PHRASE_COL_INDEX]
             label = int(line[SENTIMENT_COL_INDEX]) + 1
             documents.append(document)
+            
             labels.append(label)
 
             if reader.line_num == start_index + n_samples:
