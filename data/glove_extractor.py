@@ -6,7 +6,7 @@ from nltk.probability import FreqDist
 
 class GloveFeatureExtractor:
 
-    def extract_ids(self, documents):
+    def extract_features(self, documents):
         """
         Arguments:
         documents   : a list of documents whose features we would like to extract
@@ -14,34 +14,36 @@ class GloveFeatureExtractor:
         Returns:
         ids    : a list of np arrays, each of which contains the ids of every token in a given document
         """
-        ids = []
+        features = []
 
         for i in range(len(documents)):
-            ids.append(self.document2ids(documents[i]))
+            features.append(self.extract_features_from_document(documents[i]))
 
-        return ids
+        return features
 
-    def document2ids(self, document, unknown_id = 1):
+    def extract_features_from_document(self, document, unknown_id = 1):
         """
         Arguments:
         document    : a document whose features we would like to extract
 
         Returns:
-        ids : a numpy array containing the ids (within self.token2id) of every token in the document
+        ids : a numpy array containing the ids (within self.feature_set) of every token in the document
         """
         tokens = document.split()
 
-        ids = []
+        features = []
 
         for token in tokens:
-            if token in self.token2id:
-                ids.append(self.token2id.get(token))
+            if token in self.feature_set:
+                features.append(self.feature_set.get(token))
             else:
-                ids.append(unknown_id)
+                features.append(unknown_id)
 
-        return np.array(ids)
+        features = np.array(features)
 
-    def create_token2id(self, documents, ntokens):
+        return features
+
+    def build_feature_set(self, documents, ntokens):
         """
         Arguments:
         documents   : a list of documents whose features we would like to extract
@@ -59,15 +61,15 @@ class GloveFeatureExtractor:
         fdist = FreqDist(token for token in tokens)
         most_common_tokens_data = fdist.most_common(ntokens - 2)
 
-        id2token = ["PAD", "UNKNOWN"]
+        id2token = ["<PAD>", "<UNKNOWN>"]
 
         for token_data in most_common_tokens_data:
             id2token.append(token_data[0])
 
-        token2id = {token: id for id, token in enumerate(id2token)}
-        self.token2id = token2id
+        feature_set = {token: id for id, token in enumerate(id2token)}
+        self.feature_set = feature_set
 
-        return self.token2id
+        return self.feature_set
 
     def initialize_embeddings(self, ntokens, embed_size):
         """ Creates a numpy array ntokens * embed_size, to be used for word
@@ -79,7 +81,7 @@ class GloveFeatureExtractor:
 
         return embed_weights
 
-    def extract_glove_embeddings(self, embeddings_file, ntokens, embed_size, token2id):
+    def extract_glove_embeddings(self, embeddings_file, ntokens, embed_size, feature_set):
         embeddings = self.initialize_embeddings(ntokens, embed_size)
 
         i = 0
@@ -91,15 +93,11 @@ class GloveFeatureExtractor:
                 line = line.split()
                 token, embed_vector = (line[0], np.array(line[1:], dtype=np.float32))
 
-                # If it is in our vocab, then update the corresponding weights
-                id = token2id.get(token)
+                # If it is in our feature_set, then update the corresponding weights
+                id = feature_set.get(token)
                 if id is not None:
                     embeddings[id] = embed_vector
-
-                if i % 1000 == 0:
-                    print("i is: ", i)
-
-                if i == 10000:
+                if i == 100000:
                     break
 
 

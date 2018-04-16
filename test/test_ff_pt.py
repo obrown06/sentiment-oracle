@@ -1,36 +1,30 @@
 import sys
 sys.path.insert(0, '../data/')
 sys.path.insert(0, '../classifiers/')
-
-import data_handler
 import test_utils
-import logistic_regression
+import bow_extractor
 import pickle
+import json
 import numpy as np
+import feed_forward_pt
+import data_handler
 
 print("#################################################################### \n")
-print("PREPARING INPUT: LOGISTIC REGRESSION\n")
+print("GENERATING INPUT: PYTORCH FEED FORWARD\n")
 print("####################################################################\n")
 
-N_SAMPLES_PER_CLASS_TRAIN = 5001
-N_SAMPLES_PER_CLASS_TEST = 501
-N_SAMPLES_TRAIN = 145000
-N_SAMPLES_TEST = 10000
+N_SAMPLES_PER_CLASS_TRAIN = 250000
+N_SAMPLES_PER_CLASS_TEST = 25000
 NFEATURES = 2000
 NGRAMS = 2
 CLASS_LABELS = [1, 2, 3, 4, 5]
-PATH_TO_DATA = "../data/train.tsv"
+PATH_TO_DATA = "../data/review.json"
 
 train_documents, train_labels, train_end_index = data_handler.load_balanced_data(N_SAMPLES_PER_CLASS_TRAIN, 0, CLASS_LABELS, PATH_TO_DATA)
 test_documents, test_labels, end_index = data_handler.load_balanced_data(N_SAMPLES_PER_CLASS_TEST, train_end_index, CLASS_LABELS, PATH_TO_DATA)
-
-#train_documents, train_labels, train_end_index = data_handler.load_data(N_SAMPLES_TRAIN, 0, PATH_TO_DATA)
-#test_documents, test_labels, end_index = data_handler.load_data(N_SAMPLES_TEST, train_end_index, PATH_TO_DATA)
-
-
-print("end_index: ", end_index)
+print("end_index:", end_index)
 extractor = data_handler.generate_bow_extractor(train_documents, NFEATURES, NGRAMS)
-pickle.dump(extractor, open("../pickle/lr_extractor.p", "wb"))
+pickle.dump(extractor, open("../pickle/pytorch_ff_extractor.p", "wb"))
 
 train_input = data_handler.generate_bow_input(train_documents, extractor)
 test_input = data_handler.generate_bow_input(test_documents, extractor)
@@ -38,34 +32,38 @@ test_input = data_handler.generate_bow_input(test_documents, extractor)
 train_label_input = np.array(train_labels)
 test_label_input = np.array(test_labels)
 
-print("#################################################################### \n")
-print("TRAINING: LOGISTIC REGRESSION\n")
-print("####################################################################\n")
-
-CLASS_LABELS = [1, 2, 3, 4, 5]
-NITERATIONS = 4000
-ALPHA = 0.1
-LAMBDA = 1
-
-lr_classifier = logistic_regression.LogisticRegressionClassifier(NITERATIONS, LAMBDA, ALPHA)
-lr_classifier.train(train_input, train_label_input, CLASS_LABELS, "batch")
-pickle.dump(lr_classifier, open("../pickle/lr_classifier.p", "wb"))
+train_label_class_indices = data_handler.labels_to_indices(train_label_input, CLASS_LABELS)
 
 print("#################################################################### \n")
-print("TESTING: LOGISTIC REGRESSION\n")
-print("####################################################################\n")
+print("TRAINING: PYTORCH FEED FORWARD\n")
+print("#################################################################### \n")
 
-with open('../pickle/lr_classifier.p', 'rb') as pickle_file:
-    lr_classifier_from_file = pickle.load(pickle_file)
+# Alpha = 0.001 and NEPOCHS = 200 and NBATCHES = 50 and optim = SGD gives 0.675 accuracy, 0.8515 polarity, 0.93 near accuracy
 
-predictions, actual = lr_classifier_from_file.test(test_input, test_label_input)
-print("predictions", predictions)
-print("actual", actual)
+NEPOCHS = 200
+ALPHA = 0.001
+NBATCHES = 50
+INPUT_DIM = NFEATURES
+HIDDEN_DIM = 200
+OUTPUT_DIM = 5
+
+pytorch_ff_classifier = feed_forward_pt.FeedForwardClassifier(INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM, CLASS_LABELS)
+pytorch_ff_classifier.train(train_input, train_label_class_indices, ALPHA, NEPOCHS, NBATCHES)
+pickle.dump(pytorch_ff_classifier, open("../pickle/pytorch_ff_classifier.p", "wb"))
+
+print("#################################################################### \n")
+print("TESTING: PYTORCH FEED FORWARD\n")
+print("#################################################################### \n")
+
+with open('../pickle/pytorch_ff_classifier.p', 'rb') as pickle_file:
+    pytorch_ff_classifier = pickle.load(pickle_file)
+
+predictions, actual = pytorch_ff_classifier.test(test_input, test_label_input)
 accuracy, near_accuracy, accurate_polarity = test_utils.multiclass_accuracy(predictions, actual)
 
 print("####################################################################\n")
 
-print("RESULTS: \n")
+print("RESULTS:\n")
 print("Accuracy: ", accuracy)
 print("Near Accuracy: ", near_accuracy)
 print("Accurate Polarity: ", accurate_polarity)

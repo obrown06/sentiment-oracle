@@ -67,9 +67,6 @@ class LogisticRegressionClassifier:
         self.w : a numpy array of dimension [number of features] x 1, containing the updated values of the
                  weights after a batch update (performed once per iteration)
         """
-        print("X", X)
-        print("Y", Y)
-        print("self.w", self.w)
         for i in range(self.NITERATIONS):
             h = self.predict(X)
             grads_w = self.grads(X, Y, h)

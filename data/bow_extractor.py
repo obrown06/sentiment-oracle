@@ -6,54 +6,6 @@ from nltk.probability import FreqDist
 
 class BOWFeatureExtractor:
 
-    def extract_features(self, documents, feature_set):
-        """
-        Arguments:
-        documents   : a list of documents whose features we would like to extract
-        feature_set : a dict of dicts containing the set of most common ngrams in a sample, organized as
-                      feature_set[ngram][word] = rank (by frequency) compared to other ngram features
-
-        Returns:
-        features    : an np array containing the number of occurences of every feature in [feature_set] in
-                      every document in [documents]
-        """
-        features = []
-
-        for i in range(len(documents)):
-            features.append(self.extract_features_from_document(documents[i], feature_set))
-
-        features = np.array(features).T
-
-        return features
-
-    def extract_features_from_document(self, document, feature_set):
-        """
-        Arguments:
-        document    : a document whose features we would like to extract
-        feature_set : a dict of dicts containing the set of most common ngrams in a sample, organized as
-                      feature_set[ngram][word] = rank (by frequency) compared to other ngram features
-
-        Returns:
-        all_grams_features : an np array containing the frequencies of every feature in [feature_set]
-                             in [document]
-        """
-        all_grams_features = np.array([])
-
-
-        for n in range(len(feature_set)):
-            ngrams_to_ranks = feature_set[n + 1]
-            curr_gram_features = np.zeros(len(ngrams_to_ranks))
-            ngrams = self.compute_ngrams(document, n + 1)
-
-            for ngram in ngrams:
-                if ngram in ngrams_to_ranks:
-                    rank = ngrams_to_ranks[ngram]
-                    curr_gram_features[rank] = curr_gram_features[rank] + 1
-
-            all_grams_features = np.append(all_grams_features, curr_gram_features)
-
-        return all_grams_features
-
     def build_feature_set(self, documents, NFEATURES, NGRAMS):
         """
         Arguments:
@@ -69,19 +21,65 @@ class BOWFeatureExtractor:
         feature_set = {}
 
         for n in range(NGRAMS):
-            ngrams = []
+            curr_grams = []
 
             for i in range(len(documents)):
                 document = documents[i]
-                ngrams.extend(self.compute_ngrams(document, n + 1))
+                curr_grams.extend(self.compute_ngrams(document, n + 1))
 
-            fdist = FreqDist(ngram for ngram in ngrams)
+            fdist = FreqDist(ngram for ngram in curr_grams)
             most_common_ngrams = fdist.most_common(NFEATURES // NGRAMS)
             feature_set[n + 1] = {ngram_info[0] : rank for rank, ngram_info in enumerate(most_common_ngrams)}
 
         self.feature_set = feature_set
 
         return self.feature_set
+
+    def extract_features(self, documents):
+        """
+        Arguments:
+        documents   : a list of documents whose features we would like to extract
+        feature_set : a dict of dicts containing the set of most common ngrams in a sample, organized as
+                      feature_set[ngram][word] = rank (by frequency) compared to other ngram features
+
+        Returns:
+        features    : an np array containing the number of occurences of every feature in [feature_set] in
+                      every document in [documents]
+        """
+        features = []
+
+        for i in range(len(documents)):
+            features.append(self.extract_features_from_document(documents[i]))
+
+        features = np.array(features).T
+
+        return features
+
+    def extract_features_from_document(self, document):
+        """
+        Arguments:
+        document    : a document whose features we would like to extract
+
+        Returns:
+        all_grams_features : an np array containing the frequencies of every feature in [feature_set]
+                             in [document]
+        """
+        all_grams_features = np.array([])
+
+
+        for n in range(len(self.feature_set)):
+            ngrams_to_ranks = self.feature_set[n + 1]
+            curr_gram_features = np.zeros(len(ngrams_to_ranks))
+            ngrams = self.compute_ngrams(document, n + 1)
+
+            for ngram in ngrams:
+                if ngram in ngrams_to_ranks:
+                    rank = ngrams_to_ranks[ngram]
+                    curr_gram_features[rank] = curr_gram_features[rank] + 1
+
+            all_grams_features = np.append(all_grams_features, curr_gram_features)
+
+        return all_grams_features
 
     def compute_ngrams(self, document, n):
         """

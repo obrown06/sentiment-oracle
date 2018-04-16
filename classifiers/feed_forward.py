@@ -7,7 +7,7 @@ from nltk.tokenize import word_tokenize
 from nltk.probability import FreqDist
 import utils
 
-class DeepNetClassifier:
+class FeedForwardClassifier:
 
     def __init__(self, CLASS_LIST, LAYER_DIMS, NITERATIONS = 2000, LAMBDA = 1, ALPHA = 0.2):
         self.CLASS_LIST = CLASS_LIST
@@ -76,10 +76,12 @@ class DeepNetClassifier:
         """
         losses = []
 
+        m = Y.shape[1]
+
         for i in range(0, num_iterations):
             AL, caches = self.forward_prop(X, parameters)
             grads = self.backward_prop(AL, Y, caches)
-            parameters = self.update_parameters(parameters, grads, learning_rate, Y.shape[1], LAMBDA)
+            parameters = self.update_parameters(parameters, grads, learning_rate, m, LAMBDA)
 
             if i % 100 == 0:
                 loss = self.loss(AL, Y, parameters)
@@ -112,13 +114,9 @@ class DeepNetClassifier:
             for j in range(0, m):
                 data_in = np.reshape(X[:,j], (X[:,j].shape[0], 1))
                 label = np.array([Y[j]])
-                #print("label", label.shape[0])
-                #print("data_in", data_in)
-
                 AL, caches = self.forward_prop(data_in, parameters)
-                loss = self.loss(AL, label, parameters)
                 grads = self.backward_prop(AL, label, caches)
-                parameters = self.update_parameters(parameters, grads, learning_rate, label.shape[0], LAMBDA)
+                parameters = self.update_parameters(parameters, grads, learning_rate, m, LAMBDA)
 
             if i % 100 == 0:
                 loss = self.loss(AL, Y, parameters)
@@ -165,11 +163,7 @@ class DeepNetClassifier:
             A, cache = self.linear_activation_forward(A_prev, parameters["W" + str(l)], parameters["b" + str(l)], "relu")
             caches.append(cache)
 
-        #print("in forward, A before last layer: ", A)
-
         AL, cache = self.linear_activation_forward(A, parameters["W" + str(L)], parameters["b" + str(L)], "softmax")
-        #print("in forward, AL.shape: ", AL.shape)
-        #print("in forward, AL: ", AL)
         caches.append(cache)
         assert(AL.shape == (5,X.shape[1]))
 
@@ -299,10 +293,7 @@ class DeepNetClassifier:
         Returns:
         cost - the cross entropy log loss, a scalar
         """
-
         m = Y.shape[1]
-        #print("m", m)
-        #print("AL", AL)
 
         logprobs = np.multiply(np.log(AL), Y) + np.multiply(np.log(1 - AL), 1 - Y)
         loss = -1 * np.sum(logprobs) / m
@@ -312,13 +303,9 @@ class DeepNetClassifier:
 
         for l in range(1, L + 1):
             w = parameters["W" + str(l)]
-            #print("w: ", w)
-            #print("w multiply w.T", np.multiply(w, w))
             reg += self.LAMBDA / float(2 * m) * np.sum(np.multiply(w, w))
 
-        cost = np.squeeze(loss)
-
-        return cost - reg
+        return loss + reg
 
     def update_parameters(self, params, grads, learning_rate, m, LAMBDA):
         """
@@ -353,7 +340,6 @@ class DeepNetClassifier:
         Y : a numpy array containing the actual class labels for each document in the test set
         """
         predictions = np.array([])
-        print("parameters", self.parameters)
 
         for i in range(X.shape[1]):
             doc_data = X[:,i].reshape(X[:,i].shape[0], 1)
@@ -374,7 +360,6 @@ class DeepNetClassifier:
         max : a scalar containing the predicted class label for the given document
         """
         h = self.predict(data)
-        #print("h: ", h)
         max = np.argmax(h)
         return self.CLASS_LIST[max]
 
@@ -387,7 +372,5 @@ class DeepNetClassifier:
         Returns:
         h : the output of the classifier when applied to the given set of data
         """
-        #print("data", data)
         h = self.forward_prop(data, self.parameters)[0]
-        #print("h", h)
         return h

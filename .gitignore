@@ -1,9 +1,18 @@
 /test/test.ft.txt
 /test/train.ft.txt
-/test/review.json
-/classifiers/nb_multinomial_classifier.p
-/classifiers/nb_bernoulli_classifier.p
-/test/glove.42B.300d.txt
-/test/glove.42B.300d.zip
+/pickle/nb_multinomial_classifier.p
+/pickle/nb_bernoulli_classifier.p
+/pickle/pytorch_ff_classifier.p
+/pickle/lr_extractor.p
+/pickle/lr_classifier.p
+/pickle/pytorch_ff_extractor.p
+/pickle/pytorch_lstm_extractor.p
+/pickle/lstm_classifier.p
+/pickle/ff_classifier.p
+/pickle/ff_extractor.p
+/data/glove.42B.300d.txt
+/data/review.json
+/data/test.tsv
+/data/train.tsv
 
 venv/

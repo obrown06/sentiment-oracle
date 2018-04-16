@@ -2,72 +2,65 @@ import sys
 sys.path.insert(0, '../data/')
 sys.path.insert(0, '../classifiers/')
 import test_utils
-import pre_process
 import glove_extractor
 import lstm
 import pickle
-import json
+import data_handler
 import numpy as np
 
 print("#################################################################### \n")
-print("LOADING FROM FILE: LSTM\n")
+print("GENERATING INPUT : LSTM\n")
 print("####################################################################\n")
 
-train_documents = []
-train_labels = []
+N_SAMPLES_PER_CLASS_TRAIN = 10000
+N_SAMPLES_PER_CLASS_TEST = 1000
+NFEATURES = 2000
+EMBED_SIZE = 300
+NGRAMS = 2
+CLASS_LABELS = [1, 2, 3, 4, 5]
+PATH_TO_DATA = "../data/review.json"
+PATH_TO_GLOVE_EMBEDDINGS = '../data/glove.42B.300d.txt'
 
-with open("review.json", 'r', encoding='utf8') as file:
-    for i, line in enumerate(file):
-        if i == 100000:
-            break
-        data = json.loads(line)
-        train_documents.append(data["text"])
-        train_labels.append(data["stars"])
+train_documents, train_labels, train_end_index = data_handler.load_balanced_data(N_SAMPLES_PER_CLASS_TRAIN, 0, CLASS_LABELS, PATH_TO_DATA)
+test_documents, test_labels, end_index = data_handler.load_balanced_data(N_SAMPLES_PER_CLASS_TEST, train_end_index, CLASS_LABELS, PATH_TO_DATA)
+print("end_index: ", end_index)
+extractor = data_handler.generate_glove_extractor(train_documents, NFEATURES, NGRAMS)
+embeddings = data_handler.generate_glove_embeddings(extractor, PATH_TO_GLOVE_EMBEDDINGS, NFEATURES, EMBED_SIZE)
+pickle.dump(extractor, open("../pickle/pytorch_lstm_extractor.p", "wb"))
 
-test_documents = train_documents[-10:]
-test_labels = train_labels[-10:]
-train_documents = train_documents[0:90]
-train_labels = train_labels[0:90]
+train_input = data_handler.generate_glove_input(train_documents, extractor)
+test_input = data_handler.generate_glove_input(test_documents, extractor)
+
+train_label_input = np.array(train_labels)
+test_label_input = np.array(test_labels)
+
+train_label_class_indices = data_handler.labels_to_indices(train_label_input, CLASS_LABELS)
 
 print("#################################################################### \n")
 print("TRAINING: LSTM\n")
 print("#################################################################### \n")
 
-print("Pre_processing...")
-
-cleaner = pre_process.DocumentCleaner()
-
-train_documents = cleaner.clean(train_documents[0:int(len(train_documents) // 1)])
-test_documents = cleaner.clean(test_documents[0:int(len(test_documents) // 1)])
-
-train_labels = train_labels[0:int(len(train_labels) // 1)]
-test_labels = test_labels[0:int(len(test_labels) // 1)]
-
-print("Extracting features...")
-
-NFEATURES = 200
-EMBED_SIZE = 300
-HIDDEN_DIM = 200
-class_list = [1, 2, 3, 4, 5]
-NBATCHES = 10
+HIDDEN_DIM = 40
+NBATCHES = 100
 NEPOCHS = 10
-ALPHA = 0.01
-NLABELS = len(class_list)
+ALPHA = 0.001
 
-extractor = glove_extractor.GloveFeatureExtractor()
-token2id = extractor.create_token2id(train_documents, NFEATURES)
-print("token2id", token2id)
-embeddings = extractor.extract_glove_embeddings('./glove.42B.300d.txt', NFEATURES, EMBED_SIZE, token2id)
-print("embeddings", embeddings)
+lstm_classifier = lstm.LSTMClassifier(EMBED_SIZE, HIDDEN_DIM, NFEATURES, CLASS_LABELS, embeddings)
+lstm_classifier.train(train_input, train_label_class_indices, ALPHA, NEPOCHS, NBATCHES)
+pickle.dump(lstm_classifier, open("../pickle/lstm_classifier.p", "wb"))
 
-pickle.dump(extractor, open("../data/lstm_extractor.p", "wb"))
+print("#################################################################### \n")
+print("TESTING: LSTM\n")
+print("#################################################################### \n")
 
-train_input = extractor.extract_ids(train_documents)
+predictions, actual = lstm_classifier.test(test_input, test_label_input)
+accuracy, near_accuracy, accurate_polarity = test_utils.multiclass_accuracy(predictions, actual)
 
-print("train_input: ", train_input)
+print("####################################################################\n")
 
-print("Training")
+print("RESULTS:\n")
+print("Accuracy: ", accuracy)
+print("Near Accuracy: ", near_accuracy)
+print("Accurate Polarity: ", accurate_polarity)
 
-lstm_classifier = lstm.LSTMClassifier(EMBED_SIZE, HIDDEN_DIM, NFEATURES, NLABELS)
-lstm_classifier.set_embedding_weights(embeddings)
-lstm.train(lstm_classifier, train_input, train_labels, ALPHA, NEPOCHS, NBATCHES)
+print("####################################################################")

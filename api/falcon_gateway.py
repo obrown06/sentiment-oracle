@@ -28,11 +28,12 @@ class PredictsResource(object):
                      'The classifiers available for use are as follows: \n\n'
                      ' 1 :       \'naive_bayes\' \n'
                      ' 2 :       \'logistic_regression\' \n'
-                     ' 3 :       \'deep_learning\' \n\n'
+                     ' 3 :       \'feed_forward\' \n\n'
+                     ' 4 :       \'feed_forward_pt\' \n\n'
+                     ' 4 :       \'lstm\' \n\n'
 
-                     'Each classifier intakes a string and outputs one of two sentiment class names: \n\n'
-                     ' 1 :       \'negative\'   \n'
-                     ' 2 :       \'positive\'   \n\n'
+                     'Each classifier intakes a string and outputs a sentiment class label from 1 (most negative) \n'
+                     'to 5 (most positive) \n\n'
 
         		     'JSON REQUEST:  JSON dict containing 1) string for classification \n'
                      '               classification and 2) list of zero or more names \n'
@@ -48,9 +49,9 @@ class PredictsResource(object):
                      'Example: \n\n'
 
                      'JSON REQUEST:\n'
-                     '{"document": "I hate this", "classifiers" : {"naive_bayes", "logistic_regression", "deep_learning"}  \n\n'
+                     '{"document": "I hate this", "classifiers" : {"naive_bayes", "logistic_regression", "feed_forward"}  \n\n'
                      'JSON RESPONSE: \n'
-                     '{"naive_bayes": "negative", "logistic_regression": "negative", "deep_learning" : "negative"}  \n\n')
+                     '{"naive_bayes": "1", "logistic_regression": "2", "feed_forward" : "1"}  \n\n')
 
     def on_post(self, req, resp):
         """Handles POST requests"""

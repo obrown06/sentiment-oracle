@@ -57,15 +57,20 @@ class DocumentCleaner:
 
         return texts, np.array(labels).T
 
-    def clean(self, documents):
+    def clean(self, documents, add_negations=False):
         for i in range(len(documents)):
             document = documents[i].lower()
+            document = re.sub('\n', ' ', document)
             document = self.replace_neg_contractions(document);
             word_list = document.split(' ')
             self.remove_null_words(word_list)
-            #self.add_negations(word_list)
+
+            if add_negations:
+                self.add_negations(word_list)
+
             self.remove_terminators(word_list)
             #remove_stop_words(word_list)
+
             documents[i] = " ".join(word_list)
 
         return documents
@@ -87,17 +92,21 @@ class DocumentCleaner:
             if word[-1] in self.TERMINATORS:
                 in_negation_zone = False
 
-            return word_list
+        return word_list
 
     def remove_terminators(self, word_list):
         for i in range(len(word_list)):
             word = word_list[i]
+            first = 0
             last = len(word) - 1
 
-            while last >= 0 and (word[last] in self.TERMINATORS or word[last] == '\n'):
+            while first < last and (word[first] in self.TERMINATORS):
+                first = first + 1
+
+            while last > first and (word[last] in self.TERMINATORS):
                 last = last - 1
 
-            word_list[i] = word[0:last + 1]
+            word_list[i] = word[first:last + 1]
 
         return word_list
 
@@ -112,7 +121,7 @@ class DocumentCleaner:
             else:
                 i = i + 1
 
-            return word_list
+        return word_list
 
     def remove_stop_words(self, word_list):
         length = len(word_list)
@@ -125,4 +134,4 @@ class DocumentCleaner:
             else:
                 i = i + 1
 
-            return word_list
+        return word_list

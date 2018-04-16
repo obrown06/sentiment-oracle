@@ -250,7 +250,7 @@ class NaiveBayesMultinomialClassifier:
         for class_label in classes_to_docs:
             labels.add(class_label)
 
-        return labels;
+        return labels
 
     def compute_priors(self, classes_to_docs):
         """
