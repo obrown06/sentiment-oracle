@@ -11,6 +11,7 @@ import sklearn
 import pickle
 import json
 import glove_extractor
+import keras_extractor
 import bow_extractor
 import numpy as np
 
@@ -40,12 +41,29 @@ def generate_glove_input(documents, extractor):
 
     return bow_input
 
+def generate_keras_input(documents, extractor):
+    cleaner = clean.DocumentCleaner()
+    documents = cleaner.clean(documents, True)
+    #print("documents", documents)
+    keras_input = extractor.extract_features(documents)
+
+    return keras_input
+
 def generate_bow_extractor(documents, nfeatures, ngrams):
     cleaner = clean.DocumentCleaner()
     documents = cleaner.clean(documents, True)
     #print("documents", documents)
     extractor = bow_extractor.BOWFeatureExtractor()
     extractor.build_feature_set(documents, nfeatures, ngrams)
+
+    return extractor
+
+def generate_keras_extractor(documents):
+    cleaner = clean.DocumentCleaner()
+    documents = cleaner.clean(documents, True)
+    #print("documents", documents)
+    extractor = keras_extractor.KerasLSTMFeatureExtractor()
+    extractor.build_feature_set(documents)
 
     return extractor
 
@@ -64,7 +82,37 @@ def generate_glove_embeddings(extractor, path_to_glove_embeddings, nfeatures, em
 
     return embeddings
 
-def load_balanced_data(n_samples_per_class, start_index, class_labels, path_to_data):
+def load_balanced_yelp_data(n_samples_per_class, start_index, class_labels, path_to_data):
+    documents = []
+    labels = []
+    class_counts = dict()
+
+    for label in class_labels:
+        class_counts[label] = 0
+
+    end_index = 0
+
+    with open(path_to_data, 'r', encoding='utf8') as file:
+        for i, line in enumerate(file):
+            if i < start_index:
+                continue
+
+            data = json.loads(line)
+            document = data["text"]
+            label = data["stars"]
+
+            if class_counts[label] < n_samples_per_class:
+                documents.append(document)
+                labels.append(label)
+                class_counts[label] = class_counts[label] + 1
+
+            if full(class_counts, n_samples_per_class):
+                end_index = i
+                break
+
+    return documents, labels, end_index
+
+def load_balanced_rt_data(n_samples_per_class, start_index, class_labels, path_to_data):
     documents = []
     labels = []
     class_counts = dict()
@@ -93,7 +141,7 @@ def load_balanced_data(n_samples_per_class, start_index, class_labels, path_to_d
 
     return documents, labels, end_index
 
-def load_data(n_samples, start_index, path_to_data):
+def load_rt_data(n_samples, start_index, path_to_data):
     documents = []
     labels = []
     end_index = 0
@@ -108,7 +156,7 @@ def load_data(n_samples, start_index, path_to_data):
             document = line[PHRASE_COL_INDEX]
             label = int(line[SENTIMENT_COL_INDEX]) + 1
             documents.append(document)
-            
+
             labels.append(label)
 
             if reader.line_num == start_index + n_samples:

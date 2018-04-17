@@ -9,7 +9,7 @@ from torch.autograd import Variable
 
 torch.manual_seed(1)
 
-class LSTMClassifier(nn.Module):
+class PytorchLSTMClassifier(nn.Module):
 
     def __init__(self, embedding_dim, hidden_dim, vocab_size, class_list, embeddings):
         super(LSTMClassifier, self).__init__()

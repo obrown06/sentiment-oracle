@@ -14,5 +14,6 @@
 /data/review.json
 /data/test.tsv
 /data/train.tsv
+pickle/
 
 venv/

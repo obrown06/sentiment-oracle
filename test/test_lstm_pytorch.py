@@ -2,32 +2,34 @@ import sys
 sys.path.insert(0, '../data/')
 sys.path.insert(0, '../classifiers/')
 import test_utils
-import bow_extractor
+import glove_extractor
+import lstm
 import pickle
-import json
-import numpy as np
-import feed_forward_pt
 import data_handler
+import numpy as np
 
 print("#################################################################### \n")
-print("GENERATING INPUT: PYTORCH FEED FORWARD\n")
+print("GENERATING INPUT : LSTM\n")
 print("####################################################################\n")
 
-N_SAMPLES_PER_CLASS_TRAIN = 250000
-N_SAMPLES_PER_CLASS_TEST = 25000
+N_SAMPLES_PER_CLASS_TRAIN = 10000
+N_SAMPLES_PER_CLASS_TEST = 1000
 NFEATURES = 2000
+EMBED_SIZE = 300
 NGRAMS = 2
 CLASS_LABELS = [1, 2, 3, 4, 5]
 PATH_TO_DATA = "../data/review.json"
+PATH_TO_GLOVE_EMBEDDINGS = '../data/glove.42B.300d.txt'
 
 train_documents, train_labels, train_end_index = data_handler.load_balanced_data(N_SAMPLES_PER_CLASS_TRAIN, 0, CLASS_LABELS, PATH_TO_DATA)
 test_documents, test_labels, end_index = data_handler.load_balanced_data(N_SAMPLES_PER_CLASS_TEST, train_end_index, CLASS_LABELS, PATH_TO_DATA)
-print("end_index:", end_index)
-extractor = data_handler.generate_bow_extractor(train_documents, NFEATURES, NGRAMS)
-pickle.dump(extractor, open("../pickle/pytorch_ff_extractor.p", "wb"))
+print("end_index: ", end_index)
+extractor = data_handler.generate_glove_extractor(train_documents, NFEATURES, NGRAMS)
+embeddings = data_handler.generate_glove_embeddings(extractor, PATH_TO_GLOVE_EMBEDDINGS, NFEATURES, EMBED_SIZE)
+pickle.dump(extractor, open("../pickle/pytorch_lstm_extractor.p", "wb"))
 
-train_input = data_handler.generate_bow_input(train_documents, extractor)
-test_input = data_handler.generate_bow_input(test_documents, extractor)
+train_input = data_handler.generate_glove_input(train_documents, extractor)
+test_input = data_handler.generate_glove_input(test_documents, extractor)
 
 train_label_input = np.array(train_labels)
 test_label_input = np.array(test_labels)
@@ -35,30 +37,23 @@ test_label_input = np.array(test_labels)
 train_label_class_indices = data_handler.labels_to_indices(train_label_input, CLASS_LABELS)
 
 print("#################################################################### \n")
-print("TRAINING: PYTORCH FEED FORWARD\n")
+print("TRAINING: LSTM\n")
 print("#################################################################### \n")
 
-# Alpha = 0.001 and NEPOCHS = 200 and NBATCHES = 50 and optim = SGD gives 0.675 accuracy, 0.8515 polarity, 0.93 near accuracy
-
-NEPOCHS = 200
+HIDDEN_DIM = 40
+NBATCHES = 100
+NEPOCHS = 10
 ALPHA = 0.001
-NBATCHES = 50
-INPUT_DIM = NFEATURES
-HIDDEN_DIM = 200
-OUTPUT_DIM = 5
 
-pytorch_ff_classifier = feed_forward_pt.FeedForwardClassifier(INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM, CLASS_LABELS)
-pytorch_ff_classifier.train(train_input, train_label_class_indices, ALPHA, NEPOCHS, NBATCHES)
-pickle.dump(pytorch_ff_classifier, open("../pickle/pytorch_ff_classifier.p", "wb"))
+lstm_classifier = lstm.LSTMClassifier(EMBED_SIZE, HIDDEN_DIM, NFEATURES, CLASS_LABELS, embeddings)
+lstm_classifier.train(train_input, train_label_class_indices, ALPHA, NEPOCHS, NBATCHES)
+pickle.dump(lstm_classifier, open("../pickle/pytorch_lstm_classifier.p", "wb"))
 
 print("#################################################################### \n")
-print("TESTING: PYTORCH FEED FORWARD\n")
+print("TESTING: LSTM\n")
 print("#################################################################### \n")
 
-with open('../pickle/pytorch_ff_classifier.p', 'rb') as pickle_file:
-    pytorch_ff_classifier = pickle.load(pickle_file)
-
-predictions, actual = pytorch_ff_classifier.test(test_input, test_label_input)
+predictions, actual = lstm_classifier.test(test_input, test_label_input)
 accuracy, near_accuracy, accurate_polarity = test_utils.multiclass_accuracy(predictions, actual)
 
 print("####################################################################\n")
