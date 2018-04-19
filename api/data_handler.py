@@ -84,6 +84,3 @@ def clean_document(document):
     document_cleaner = clean.DocumentCleaner()
     [cleaned_document] = document_cleaner.clean([document], CLEAN_WITH_NEGATIONS)
     return cleaned_document
-
-#input = '{"document" : "I hate this. bad", "classifiers" : ["naive_bayes", "logistic_regression", "feed_forward", "feed_forward_pt", "lstm"]}'
-#print(invoke_predict(input))

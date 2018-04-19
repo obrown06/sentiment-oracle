@@ -9,9 +9,9 @@ from data_handler import invoke_predict
 from falcon_cors import CORS
 
 public_cors = CORS(allow_all_origins=True)
+cors = CORS(allow_origins_list=['http://localhost:8000', 'http://localhost:8000/software'])
 
 models = {"nb": pickle.load(open("../pickle/nb_multinomial_classifier.p", "rb")), "lr" : pickle.load(open("../pickle/lr_classifier.p", "rb")),  "ff_gd" : pickle.load(open("../pickle/ff_classifier.p", "rb")), "ff_adam" : pickle.load(open("../pickle/pytorch_ff_classifier.p", "rb")), "lstm" : lstm_keras.load_keras("../pickle/lstm_keras.h5", "../pickle/lstm_wrapper.p")}
-
 extractors = {"lr" : pickle.load(open("../pickle/lr_extractor.p", "rb")), "ff_gd" : pickle.load(open("../pickle/ff_extractor.p", "rb")), "ff_adam" : pickle.load(open("../pickle/pytorch_ff_extractor.p", "rb")), "lstm" : pickle.load(open("../pickle/keras_lstm_extractor.p", "rb"))}
 
 class InfoResource(object):
@@ -82,7 +82,6 @@ class PredictsResource(object):
         resp.body = json.dumps(invoke_predict(raw_json, models, extractors))
 
 # falcon.API instances are callable WSGI apps. Never change this.
-cors = CORS(allow_origins_list=['http://localhost:8000', 'http://localhost:8000/software'])
 app = application = falcon.API(middleware=[cors.middleware])
 
 # Resources are represented by long-lived class instances. Each Python class becomes a different "URL directory"
