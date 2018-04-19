@@ -9,12 +9,13 @@ import utils
 
 class FeedForwardClassifier:
 
-    def __init__(self, CLASS_LIST, LAYER_DIMS, NITERATIONS = 2000, LAMBDA = 1, ALPHA = 0.2):
+    def __init__(self, CLASS_LIST, LAYER_DIMS, NITERATIONS = 2000, LAMBDA = 1, ALPHA = 0.2, BATCH_SIZE = 100):
         self.CLASS_LIST = CLASS_LIST
         self.NITERATIONS = NITERATIONS
         self.LAMBDA = LAMBDA
         self.ALPHA = ALPHA
         self.LAYER_DIMS = LAYER_DIMS
+        self.BATCH_SIZE = BATCH_SIZE
 
     def train(self, X, Y, method):
         """
@@ -33,7 +34,7 @@ class FeedForwardClassifier:
         self.parameters = self.initialize_params(self.LAYER_DIMS)
 
         if method == "batch":
-            self.parameters = self.batch_gradient_descent(X, one_hot_Y, self.parameters, self.ALPHA, self.NITERATIONS, self.LAMBDA)
+            self.parameters = self.batch_gradient_descent(X, one_hot_Y, self.parameters, self.ALPHA, self.NITERATIONS, self.LAMBDA, self.BATCH_SIZE)
         elif method == "stochastic":
             self.parameters = self.stochastic_gradient_descent(X, one_hot_Y, self.parameters, self.ALPHA, self.NITERATIONS, self.LAMBDA)
 
@@ -58,13 +59,13 @@ class FeedForwardClassifier:
 
         return one_hot
 
-    def batch_gradient_descent(self, X, Y, parameters, learning_rate, num_iterations, LAMBDA):
+    def batch_gradient_descent(self, X, Y, parameters, learning_rate, num_iterations, LAMBDA, batch_size):
         """
         Arguments:
         X : a numpy array of dimension [number of features] x [number of training examples], containing the
             values of every feature in every document in the training set; includes a row of 1s which pair
             with the w[0] (the bias)
-        Y : a numpy array of dimension [number of training examples] x [number of classes], containing the
+        Y : a numpy array of dimension [number of classes] x [number of training examples], containing the
             "one-hot" class labels of every document in the training set
         parameters : an empty dictionary, ultimately to contain the parameters [Wl] and [bl] for each layer
                      of the network
@@ -77,13 +78,18 @@ class FeedForwardClassifier:
         losses = []
 
         m = Y.shape[1]
+        num_batches = X.shape[1] // batch_size
 
         for i in range(0, num_iterations):
-            AL, caches = self.forward_prop(X, parameters)
-            grads = self.backward_prop(AL, Y, caches)
-            parameters = self.update_parameters(parameters, grads, learning_rate, m, LAMBDA)
+            for n in range(0, num_batches):
+                X_batched = X[:, n * batch_size : (n + 1) * batch_size]
+                Y_batched = Y[:, n * batch_size : (n + 1) * batch_size]
+                AL, caches = self.forward_prop(X_batched, parameters)
+                grads = self.backward_prop(AL, Y_batched, caches)
+                parameters = self.update_parameters(parameters, grads, learning_rate, m, LAMBDA)
 
-            if i % 100 == 0:
+            if i % 10 == 0:
+                AL, caches = self.forward_prop(X, parameters)
                 loss = self.loss(AL, Y, parameters)
                 print ("Loss after iteration %i: %f" %(i, loss))
                 losses.append(loss)

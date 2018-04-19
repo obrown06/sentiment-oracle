@@ -11,17 +11,18 @@ print("#################################################################### \n")
 print("GENERATING INPUT: FEED FORWARD\n")
 print("####################################################################\n")
 
-N_SAMPLES_PER_CLASS_TRAIN = 1001
-N_SAMPLES_PER_CLASS_TEST = 1001
-N_SAMPLES_TRAIN = 10001
-N_SAMPLES_TEST = 1001
+N_SAMPLES_PER_CLASS_TRAIN = 20000
+N_SAMPLES_PER_CLASS_TEST = 1000
+N_SAMPLES_TRAIN = 10000
+N_SAMPLES_TEST = 1000
 NFEATURES = 2000
 NGRAMS = 2
 PATH_TO_DATA = "../data/train.tsv"
 CLASS_LABELS = [1, 2, 3, 4, 5]
 
-train_documents, train_labels, train_end_index = data_handler.load_balanced_data(N_SAMPLES_PER_CLASS_TRAIN, 0, CLASS_LABELS, PATH_TO_DATA)
-test_documents, test_labels, end_index = data_handler.load_balanced_data(N_SAMPLES_PER_CLASS_TEST, train_end_index, CLASS_LABELS, PATH_TO_DATA)
+test_documents, test_labels, test_end_index = data_handler.load_balanced_rt_data(N_SAMPLES_PER_CLASS_TEST, 0, CLASS_LABELS, PATH_TO_DATA)
+train_documents, train_labels, end_index = data_handler.load_balanced_rt_data(N_SAMPLES_PER_CLASS_TRAIN, test_end_index, CLASS_LABELS, PATH_TO_DATA)
+
 
 #train_documents, train_labels, train_end_index = data_handler.load_data(N_SAMPLES_TRAIN, 0, PATH_TO_DATA)
 #test_documents, test_labels, end_index = data_handler.load_data(N_SAMPLES_TEST, train_end_index, PATH_TO_DATA)
@@ -40,8 +41,8 @@ print("#################################################################### \n")
 print("TRAINING: FEED FORWARD\n")
 print("#################################################################### \n")
 
-NITERATIONS = 1000
-ALPHA = 0.01
+NITERATIONS = 500
+ALPHA = 0.001
 LAMBDA = 0.5
 layer_dims = [NFEATURES, 200, 5]
 

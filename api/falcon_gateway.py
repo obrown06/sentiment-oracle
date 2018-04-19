@@ -1,9 +1,18 @@
 # falcon_gateway.py
 import falcon
+import sys
+sys.path.insert(0, '../classifiers')
+import lstm_keras
 import json
 import pickle
 from data_handler import invoke_predict
 from falcon_cors import CORS
+
+public_cors = CORS(allow_all_origins=True)
+
+models = {"nb": pickle.load(open("../pickle/nb_multinomial_classifier.p", "rb")), "lr" : pickle.load(open("../pickle/lr_classifier.p", "rb")),  "ff_gd" : pickle.load(open("../pickle/ff_classifier.p", "rb")), "ff_adam" : pickle.load(open("../pickle/pytorch_ff_classifier.p", "rb")), "lstm" : lstm_keras.load_keras("../pickle/lstm_keras.h5", "../pickle/lstm_wrapper.p")}
+
+extractors = {"lr" : pickle.load(open("../pickle/lr_extractor.p", "rb")), "ff_gd" : pickle.load(open("../pickle/ff_extractor.p", "rb")), "ff_adam" : pickle.load(open("../pickle/pytorch_ff_extractor.p", "rb")), "lstm" : pickle.load(open("../pickle/keras_lstm_extractor.p", "rb"))}
 
 class InfoResource(object):
     def on_get(self, req, resp):
@@ -27,9 +36,8 @@ class PredictsResource(object):
 
                      'The classifiers available for use are as follows: \n\n'
                      ' 1 :       \'naive_bayes\' \n'
-                     ' 2 :       \'logistic_regression\' \n'
-                     ' 3 :       \'feed_forward\' \n\n'
-                     ' 4 :       \'feed_forward_pt\' \n\n'
+                     ' 2 :       \'feed_forward_gd\' \n\n'
+                     ' 3 :       \'feed_forward_adam\' \n\n'
                      ' 4 :       \'lstm\' \n\n'
 
                      'Each classifier intakes a string and outputs a sentiment class label from 1 (most negative) \n'
@@ -49,9 +57,9 @@ class PredictsResource(object):
                      'Example: \n\n'
 
                      'JSON REQUEST:\n'
-                     '{"document": "I hate this", "classifiers" : {"naive_bayes", "logistic_regression", "feed_forward"}  \n\n'
+                     '{"document": "I hate this", "classifiers" : {"naive_bayes", "feed_forward_gd"}  \n\n'
                      'JSON RESPONSE: \n'
-                     '{"naive_bayes": "1", "logistic_regression": "2", "feed_forward" : "1"}  \n\n')
+                     '{"naive_bayes": "1", "feed_forward_gd" : "1"}  \n\n')
 
     def on_post(self, req, resp):
         """Handles POST requests"""
@@ -71,10 +79,10 @@ class PredictsResource(object):
                 'JSON was incorrect.')
 
         resp.status = falcon.HTTP_200
-        resp.body = json.dumps(invoke_predict(raw_json))
+        resp.body = json.dumps(invoke_predict(raw_json, models, extractors))
 
 # falcon.API instances are callable WSGI apps. Never change this.
-cors = CORS(allow_origins_list=['http://localhost:8000'])
+cors = CORS(allow_origins_list=['http://localhost:8000', 'http://localhost:8000/software'])
 app = application = falcon.API(middleware=[cors.middleware])
 
 # Resources are represented by long-lived class instances. Each Python class becomes a different "URL directory"

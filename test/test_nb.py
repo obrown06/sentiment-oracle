@@ -14,18 +14,18 @@ print("#################################################################### \n")
 print("PREPARING INPUT: NAIVE BAYES\n")
 print("####################################################################\n")
 
-N_SAMPLES_PER_CLASS_TRAIN = 4000
-N_SAMPLES_PER_CLASS_TEST = 1000
+N_SAMPLES_PER_CLASS_TRAIN = 6500
+N_SAMPLES_PER_CLASS_TEST = 500
 N_SAMPLES_TRAIN = 146000
 N_SAMPLES_TEST = 10000
 PATH_TO_DATA = "../data/train.tsv"
 CLASS_LABELS = [1, 2, 3, 4, 5]
 
-# train_documents, train_labels, train_end_index = data_handler.load_balanced_data(N_SAMPLES_PER_CLASS_TRAIN, 0, CLASS_LABELS, PATH_TO_DATA)
-# test_documents, test_labels, end_index = data_handler.load_balanced_data(N_SAMPLES_PER_CLASS_TEST, train_end_index, CLASS_LABELS, PATH_TO_DATA)
+train_documents, train_labels, train_end_index = data_handler.load_balanced_rt_data(N_SAMPLES_PER_CLASS_TRAIN, 0, CLASS_LABELS, PATH_TO_DATA)
+test_documents, test_labels, end_index = data_handler.load_balanced_rt_data(N_SAMPLES_PER_CLASS_TEST, train_end_index, CLASS_LABELS, PATH_TO_DATA)
 
-train_documents, train_labels, train_end_index = data_handler.load_data(N_SAMPLES_TRAIN, 0, PATH_TO_DATA)
-test_documents, test_labels, end_index = data_handler.load_data(N_SAMPLES_TEST, train_end_index, PATH_TO_DATA)
+#train_documents, train_labels, train_end_index = data_handler.load_rt_data(N_SAMPLES_TRAIN, 0, PATH_TO_DATA)
+#test_documents, test_labels, end_index = data_handler.load_rt_data(N_SAMPLES_TEST, train_end_index, PATH_TO_DATA)
 
 print("end_index", end_index)
 train_input = data_handler.generate_nb_input(train_documents, train_labels, CLASS_LABELS)

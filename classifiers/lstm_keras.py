@@ -3,11 +3,12 @@ import numpy as np
 import math
 import tensorflow as tf
 import keras
+import pickle
 from keras.constraints import maxnorm
-from keras.optimizers import SGD, Adam, Nadam, RMSprop
+from keras.optimizers import SGD, Nadam
 from keras.models import Sequential, Model, load_model
-from keras.layers import Embedding, Conv1D, MaxPooling1D
-from keras.layers.core import Dense, Activation, Dropout ,Flatten
+from keras.layers import Embedding
+from keras.layers.core import Dense, Dropout
 from keras.callbacks import ReduceLROnPlateau, EarlyStopping
 from keras.layers.recurrent import LSTM
 from keras.utils import np_utils
@@ -36,16 +37,16 @@ class KerasLSTMClassifier():
     def train(self, X_train, Y_train, X_val, Y_val, optimizer_type, ALPHA = 0.0001, EPOCHS = 60, BATCH_SIZE = 32):
 
         if optimizer_type == 'nadam':
-            optimizer = keras.optimizers.Nadam(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, schedule_decay=0.004)
+            optimizer = keras.optimizers.Nadam(lr=ALPHA, beta_1=0.9, beta_2=0.999, epsilon=1e-08, schedule_decay=0.004)
         else:
             optimizer = SGD(lr=ALPHA, nesterov=True, momentum=0.7, decay=1e-4)
+
         reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.8, patience=0, verbose=1, mode='auto', cooldown=0, min_lr=1e-6)
         early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=6, verbose=1)
+
         self.model.compile(loss='categorical_crossentropy', optimizer = optimizer, metrics=['accuracy'])
         self.model.fit(X_train, Y_train, epochs = EPOCHS, batch_size = BATCH_SIZE, verbose = 1,
                        validation_data=(X_val, Y_val), callbacks=[reduce_lr, early_stopping])
-
-
 
     def test(self, data, target):
         predictions = np.array([])
@@ -64,3 +65,18 @@ class KerasLSTMClassifier():
         data = np.array([data])
         predictions = self.model.predict(data)
         return np.argmax(predictions[0])
+
+def pickle_keras(wrapper, path_to_keras, path_to_wrapper):
+    wrapper.model.save(path_to_keras)
+    wrapper.model = None
+    pickle.dump(wrapper, open(path_to_wrapper, "wb"))
+
+def load_keras(path_to_keras, path_to_wrapper):
+    model = keras.models.load_model(path_to_keras)
+
+    with open(path_to_wrapper, 'rb') as wrapper_file:
+        wrapper = pickle.load(wrapper_file)
+
+    wrapper.model = model
+
+    return wrapper

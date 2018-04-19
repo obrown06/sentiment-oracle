@@ -49,7 +49,7 @@ class KerasLSTMFeatureExtractor:
         document    : a document whose features we would like to extract
 
         """
-        return self.extract_features([document])
+        return self.extract_features([document])[0]
 
     def vocab_size(self):
 

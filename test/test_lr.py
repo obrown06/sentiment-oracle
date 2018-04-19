@@ -12,23 +12,19 @@ print("#################################################################### \n")
 print("GENERATING INPUT: LOGISTIC REGRESSION\n")
 print("####################################################################\n")
 
-N_SAMPLES_PER_CLASS_TRAIN = 5001
-N_SAMPLES_PER_CLASS_TEST = 501
-N_SAMPLES_TRAIN = 145000
+N_SAMPLES_PER_CLASS_TRAIN = 20000
+N_SAMPLES_PER_CLASS_TEST = 1000
+N_SAMPLES_TRAIN = 130000
 N_SAMPLES_TEST = 10000
 NFEATURES = 2000
 NGRAMS = 2
 CLASS_LABELS = [1, 2, 3, 4, 5]
 PATH_TO_DATA = "../data/train.tsv"
 
-train_documents, train_labels, train_end_index = data_handler.load_rt_data(N_SAMPLES_TRAIN, 0, PATH_TO_DATA)
-test_documents, test_labels, end_index = data_handler.load_rt_data(N_SAMPLES_TEST, train_end_index, PATH_TO_DATA)
-
-#train_documents, train_labels, train_end_index = data_handler.load_data(N_SAMPLES_TRAIN, 0, PATH_TO_DATA)
-#test_documents, test_labels, end_index = data_handler.load_data(N_SAMPLES_TEST, train_end_index, PATH_TO_DATA)
-
-
+test_documents, test_labels, test_end_index = data_handler.load_balanced_rt_data(N_SAMPLES_PER_CLASS_TEST, 0, CLASS_LABELS, PATH_TO_DATA)
+train_documents, train_labels, end_index = data_handler.load_balanced_rt_data(N_SAMPLES_PER_CLASS_TRAIN, test_end_index, CLASS_LABELS, PATH_TO_DATA)
 print("end_index: ", end_index)
+
 extractor = data_handler.generate_bow_extractor(train_documents, NFEATURES, NGRAMS)
 pickle.dump(extractor, open("../pickle/lr_extractor.p", "wb"))
 
@@ -43,7 +39,7 @@ print("TRAINING: LOGISTIC REGRESSION\n")
 print("####################################################################\n")
 
 CLASS_LABELS = [1, 2, 3, 4, 5]
-NITERATIONS = 4000
+NITERATIONS = 1000
 ALPHA = 0.1
 LAMBDA = 1
 
