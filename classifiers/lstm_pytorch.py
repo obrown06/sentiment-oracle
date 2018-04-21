@@ -9,17 +9,46 @@ from torch.autograd import Variable
 
 torch.manual_seed(1)
 
-class PytorchLSTMClassifier(nn.Module):
+class PyTorchLSTMClassifier(nn.Module):
 
-    def __init__(self, embedding_dim, hidden_dim, vocab_size, class_list, embeddings):
-        super(LSTMClassifier, self).__init__()
-        self.hidden_dim = hidden_dim
-        self.word_embeddings = nn.Embedding(vocab_size, embedding_dim)
-        self.lstm = nn.LSTM(embedding_dim, hidden_dim)
-        self.hidden_to_label = nn.Linear(hidden_dim, len(class_list))
+    def __init__(self, data_info, classifier_info):
+        super(PyTorchLSTMClassifier, self).__init__()
+        self.data_info = data_info
+        self.classifier_info = classifier_info
+        self.class_labels = data_info["class_labels"]
+        self.nepochs = classifier_info["nepochs"]
+        self.nbatches = classifier_info["nbatches"]
+
+        self.hidden_dim = classifier_info["hidden_dim"]
+        self.word_embeddings = nn.Embedding(classifier_info["nfeatures"], classifier_info["embed_size"])
+        self.lstm = nn.LSTM(classifier_info["embed_size"], classifier_info["hidden_dim"])
+        self.hidden_to_label = nn.Linear(classifier_info["hidden_dim"], len(data_info["class_labels"]))
         self.hidden = self.init_hidden(1)
+
+    def train(self, data, target, embeddings):
         self.set_embedding_weights(embeddings)
-        self.class_list = class_list
+        optimizer = optim.Adam(self.parameters())
+        criterion = nn.NLLLoss()
+
+        batched_data, batched_targets, batched_lengths = self.batch_and_pad(data, target, self.nbatches)
+
+        for epoch in range(self.nepochs):
+            for i in range(self.nbatches):
+                batch, target, lengths = Variable(torch.from_numpy(batched_data[i])), Variable(torch.from_numpy(batched_targets[i]).long()), batched_lengths[i]
+                self.hidden = self.init_hidden(len(lengths))
+                optimizer.zero_grad()
+                out = self.forward(batch, lengths)
+                loss = criterion(out, target)
+                loss.backward()
+                optimizer.step()
+
+                if i % 2 == 0:
+                    print("Batch: ", i)
+
+            if epoch % 2 == 0:
+                print("Epoch: ", epoch)
+                print("Loss: ", loss.data[0])
+
 
     def init_hidden(self, batch_size):
 
@@ -94,29 +123,6 @@ class PytorchLSTMClassifier(nn.Module):
         return batched_data, batched_targets
 
 
-    def train(self, data, target, ALPHA = 0.001, EPOCHS = 10, NBATCHES = 10):
-        optimizer = optim.Adam(self.parameters())
-        criterion = nn.NLLLoss()
-
-        batched_data, batched_targets, batched_lengths = self.batch_and_pad(data, target, NBATCHES)
-
-        for epoch in range(EPOCHS):
-            for i in range(NBATCHES):
-                batch, target, lengths = Variable(torch.from_numpy(batched_data[i])), Variable(torch.from_numpy(batched_targets[i]).long()), batched_lengths[i]
-                self.hidden = self.init_hidden(len(lengths))
-                optimizer.zero_grad()
-                out = self.forward(batch, lengths)
-                loss = criterion(out, target)
-                loss.backward()
-                optimizer.step()
-
-                if i % 2 == 0:
-                    print("Batch: ", i)
-
-            if epoch % 2 == 0:
-                print("Epoch: ", epoch)
-                print("Loss: ", loss.data[0])
-
     def test(self, data, target):
         predictions = np.array([])
 
@@ -130,7 +136,7 @@ class PytorchLSTMClassifier(nn.Module):
 
     def classify(self, data):
         class_index = self.predict(data)
-        return self.class_list[class_index]
+        return self.class_labels[class_index]
 
     def predict(self, data):
         lengths = [len(data)]

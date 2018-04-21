@@ -3,19 +3,23 @@ import utils
 
 class LogisticRegressionClassifier:
 
-    def __init__(self, NITERATIONS = 2000, LAMBDA = 1, ALPHA = 0.01):
-        self.NITERATIONS = NITERATIONS
-        self.LAMBDA = LAMBDA
-        self.ALPHA = ALPHA
+    def __init__(self, data_info, classifier_info):
+        self.data_info = data_info
+        self.classifier_info = classifier_info
+        self.class_labels = data_info["class_labels"]
+        self.nfeatures = classifier_info["nfeatures"]
+        self.ngrams = classifier_info["ngrams"]
+        self.niterations = classifier_info["niterations"]
+        self.Lambda = classifier_info["lambda"]
+        self.alpha = classifier_info["alpha"]
 
-    def train(self, X, Y, class_list, method):
+    def train(self, X, Y, method):
         """
         Arguments:
         X : a numpy array of dimension [number of features] x [number of training examples], containing the
             values of every feature in every document in the training set
         Y : a numpy array of dimension [number of training examples] x 1, containing the class labels of
         every document in the training set
-        class_list : a python list containing the labels of the possible output classes
         method : a string indicating the training method to be used
 
         Stores:
@@ -23,11 +27,9 @@ class LogisticRegressionClassifier:
         self.w : a numpy array of dimension [number of training examples] containing the values of the weights
                  of the classifier (initialized to zero)
         """
-        self.class_list = class_list
-
         ones = np.ones((1, X.shape[1]))
         X = np.concatenate((ones, X), axis=0)
-        self.w = np.zeros((X.shape[0], len(class_list)))
+        self.w = np.zeros((X.shape[0], len(self.class_labels)))
         one_hot_Y = self.convert_to_one_hot(Y)
 
         if method == "batch":
@@ -46,7 +48,7 @@ class LogisticRegressionClassifier:
         one_hot.w : a numpy array of dimension [number of documents] x 1, containing the "one-hot"
                     representation of all of the class labels for every document in the document set
         """
-        one_hot = np.zeros((len(Y), len(self.class_list)))
+        one_hot = np.zeros((len(Y), len(self.class_labels)))
 
         for i in range(len(Y)):
             one_hot[i, Y[i] - 1] = 1
@@ -67,10 +69,10 @@ class LogisticRegressionClassifier:
         self.w : a numpy array of dimension [number of features] x 1, containing the updated values of the
                  weights after a batch update (performed once per iteration)
         """
-        for i in range(self.NITERATIONS):
+        for i in range(self.niterations):
             h = self.predict(X)
             grads_w = self.grads(X, Y, h)
-            self.w = self.w - self.ALPHA * grads_w
+            self.w = self.w - self.alpha * grads_w
 
             if i % 100 == 0:
                 print("loss after iteration ", i, " is: ", self.loss(Y, h))
@@ -93,7 +95,7 @@ class LogisticRegressionClassifier:
         """
         m = X.shape[1]
         grads = 1 / float(m) * np.dot(X, (h - Y))
-        reg = self.LAMBDA * self.w / float(m)
+        reg = self.Lambda * self.w / float(m)
         reg[0] = 0
         grads = grads + reg
 
@@ -114,12 +116,12 @@ class LogisticRegressionClassifier:
         """
         m = X.shape[1]
 
-        for i in range(self.NITERATIONS):
+        for i in range(self.niterations):
             for j in range(m):
                 h = self.predict(X[:,j])
                 grads = (h - Y[j]) * X[:,j]
-                reg = 2 * self.LAMBDA * self.w / float(m)
-                self.w = self.w - self.ALPHA * (grads + reg)
+                reg = 2 * self.Lambda * self.w / float(m)
+                self.w = self.w - self.alpha * (grads + reg)
 
             if i % 100 == 0:
                 print("loss after iteration ", i, " is: ", self.loss(Y, self.predict(X)))
@@ -135,7 +137,7 @@ class LogisticRegressionClassifier:
         """
         m = Y.shape[0]
         loss = - 1 / float(m) * np.sum(np.multiply(Y, np.log(h)))
-        reg = 1 / float(2 * m) * self.LAMBDA * np.sum(np.multiply(self.w, self.w))
+        reg = 1 / float(2 * m) * self.Lambda * np.sum(np.multiply(self.w, self.w))
         loss = loss + reg
         return loss
 
@@ -174,7 +176,7 @@ class LogisticRegressionClassifier:
         """
         h = self.predict(data)
         max = np.argmax(h)
-        return self.class_list[max]
+        return self.class_labels[max]
 
     def predict(self, data):
         """
@@ -187,13 +189,7 @@ class LogisticRegressionClassifier:
         h : a numpy array of dimension [number of examples] x [number of classes] whose rows are "one-hot"
             arrays containing the predictions of the classifier
         """
-        #print("data shape", data.shape)
-        #print("data", data)
-        #print("w", self.w)
-        #print("w shape", self.w.shape)
+
         Z = np.dot(data.T, self.w)
-        #print("Z", Z)
-        #print("Z shape", Z.shape)
         h, cache = utils.softmax(Z)
-        #print("h", h)
         return h

@@ -26,33 +26,15 @@ def generate_nb_input(documents, labels, label_set):
 
     return nb_input
 
-def generate_bow_input(documents, extractor):
-    SHOULD_ADD_NEGATIONS = True
+def generate_input(documents, extractor, SHOULD_ADD_NEGATIONS=True):
     cleaner = clean.DocumentCleaner()
     documents = cleaner.clean(documents, SHOULD_ADD_NEGATIONS)
     bow_input = extractor.extract_features(documents)
-
     return bow_input
-
-def generate_glove_input(documents, extractor):
-    cleaner = clean.DocumentCleaner()
-    documents = cleaner.clean(documents)
-    bow_input = extractor.extract_features(documents)
-
-    return bow_input
-
-def generate_keras_input(documents, extractor):
-    cleaner = clean.DocumentCleaner()
-    documents = cleaner.clean(documents, True)
-    #print("documents", documents)
-    keras_input = extractor.extract_features(documents)
-
-    return keras_input
 
 def generate_bow_extractor(documents, nfeatures, ngrams):
     cleaner = clean.DocumentCleaner()
     documents = cleaner.clean(documents, True)
-    #print("documents", documents)
     extractor = bow_extractor.BOWFeatureExtractor()
     extractor.build_feature_set(documents, nfeatures, ngrams)
 
@@ -61,13 +43,12 @@ def generate_bow_extractor(documents, nfeatures, ngrams):
 def generate_keras_extractor(documents):
     cleaner = clean.DocumentCleaner()
     documents = cleaner.clean(documents, True)
-    #print("documents", documents)
     extractor = keras_extractor.KerasLSTMFeatureExtractor()
     extractor.build_feature_set(documents)
 
     return extractor
 
-def generate_glove_extractor(documents, nfeatures, ngrams):
+def generate_glove_extractor(documents, nfeatures):
     SHOULD_ADD_NEGATIONS = False
     cleaner = clean.DocumentCleaner()
     documents = cleaner.clean(documents, SHOULD_ADD_NEGATIONS)
@@ -82,7 +63,31 @@ def generate_glove_embeddings(extractor, path_to_glove_embeddings, nfeatures, em
 
     return embeddings
 
-def load_balanced_yelp_data(n_samples_per_class, start_index, class_labels, path_to_data):
+def load_data(data_source, path_to_data, n_samples_train, n_samples_val, n_samples_test, class_labels, is_balanced=False):
+
+    load_function = generate_load_function(data_source, is_balanced)
+    test_documents, test_labels, test_end_index = load_function(n_samples_test, 0, path_to_data, class_labels)
+    val_documents, val_labels, val_end_index = load_function(n_samples_test, test_end_index, path_to_data, class_labels)
+    train_documents, train_labels, end_index = load_function(n_samples_train, val_end_index, path_to_data, class_labels)
+
+    return train_documents, train_labels, val_documents, val_labels, test_documents, test_labels, end_index
+
+def generate_load_function(data_source, data_is_balanced):
+
+    if data_source == "ROTTEN_TOMATOES":
+        if data_is_balanced:
+            return load_balanced_rt_data
+        else:
+            return load_rt_data
+    elif data_source == "YELP":
+        if data_is_balanced:
+            return load_balanced_yelp_data
+        else:
+            return load_yelp_data
+    else:
+        return load_amazon_data
+
+def load_balanced_yelp_data(n_samples_per_class, start_index, path_to_data, class_labels):
     documents = []
     labels = []
     class_counts = dict()
@@ -112,7 +117,7 @@ def load_balanced_yelp_data(n_samples_per_class, start_index, class_labels, path
 
     return documents, labels, end_index
 
-def load_balanced_rt_data(n_samples_per_class, start_index, class_labels, path_to_data):
+def load_balanced_rt_data(n_samples_per_class, start_index, path_to_data, class_labels):
     documents = []
     labels = []
     class_counts = dict()
@@ -141,7 +146,7 @@ def load_balanced_rt_data(n_samples_per_class, start_index, class_labels, path_t
 
     return documents, labels, end_index
 
-def load_rt_data(n_samples, start_index, path_to_data):
+def load_rt_data(n_samples, start_index, path_to_data, class_labels=None):
     documents = []
     labels = []
     end_index = 0

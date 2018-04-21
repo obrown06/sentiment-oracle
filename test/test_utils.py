@@ -1,6 +1,9 @@
 import math
+import sys
+sys.path.insert(0, '../data/')
 import numpy as np
 import sklearn
+import data_handler
 from sklearn import metrics
 
 def multiclass_accuracy(predictions, actual):

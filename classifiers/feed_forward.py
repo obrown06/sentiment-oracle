@@ -9,15 +9,18 @@ import utils
 
 class FeedForwardClassifier:
 
-    def __init__(self, CLASS_LIST, LAYER_DIMS, NITERATIONS = 2000, LAMBDA = 1, ALPHA = 0.2, BATCH_SIZE = 100):
-        self.CLASS_LIST = CLASS_LIST
-        self.NITERATIONS = NITERATIONS
-        self.LAMBDA = LAMBDA
-        self.ALPHA = ALPHA
-        self.LAYER_DIMS = LAYER_DIMS
-        self.BATCH_SIZE = BATCH_SIZE
+    def __init__(self, data_info, classifier_info):
+        self.data_info = data_info
+        self.classifier_info = classifier_info
+        self.class_labels = data_info["class_labels"]
+        self.niterations = classifier_info["niterations"]
+        self.Lambda = classifier_info["lambda"]
+        self.alpha = classifier_info["alpha"]
+        self.layer_dims = classifier_info["layers_dims"]
+        self.batch_size = classifier_info["batch_size"]
+        self.method = classifier_info["method"]
 
-    def train(self, X, Y, method):
+    def train(self, X, Y):
         """
         Arguments:
         X : a numpy array of dimension [number of features] x [number of training examples], containing the
@@ -31,12 +34,12 @@ class FeedForwardClassifier:
         parameters : a dictionary containing the trained parameters [ Wl and bl ] for each layer of the network
         """
         one_hot_Y = self.convert_to_one_hot(Y)
-        self.parameters = self.initialize_params(self.LAYER_DIMS)
+        self.parameters = self.initialize_params(self.layer_dims)
 
-        if method == "batch":
-            self.parameters = self.batch_gradient_descent(X, one_hot_Y, self.parameters, self.ALPHA, self.NITERATIONS, self.LAMBDA, self.BATCH_SIZE)
-        elif method == "stochastic":
-            self.parameters = self.stochastic_gradient_descent(X, one_hot_Y, self.parameters, self.ALPHA, self.NITERATIONS, self.LAMBDA)
+        if self.method == "batch":
+            self.parameters = self.batch_gradient_descent(X, one_hot_Y, self.parameters, self.alpha, self.niterations, self.Lambda, self.batch_size)
+        elif self.method == "stochastic":
+            self.parameters = self.stochastic_gradient_descent(X, one_hot_Y, self.parameters, self.alpha, self.niterations, self.Lambda)
 
         return self.parameters
 
@@ -51,7 +54,7 @@ class FeedForwardClassifier:
         one_hot.w : a numpy array of dimension [number of class labels] x [number of documents], containing the "one-hot"
                     representation of all of the class labels for every document in the document set
         """
-        one_hot = np.zeros((self.LAYER_DIMS[-1], len(Y)))
+        one_hot = np.zeros((self.layer_dims[-1], len(Y)))
 
         for i in range(len(Y)):
             one_hot[Y[i] - 1, i] = 1
@@ -59,7 +62,7 @@ class FeedForwardClassifier:
 
         return one_hot
 
-    def batch_gradient_descent(self, X, Y, parameters, learning_rate, num_iterations, LAMBDA, batch_size):
+    def batch_gradient_descent(self, X, Y, parameters, learning_rate, num_iterations, Lambda, batch_size):
         """
         Arguments:
         X : a numpy array of dimension [number of features] x [number of training examples], containing the
@@ -86,7 +89,7 @@ class FeedForwardClassifier:
                 Y_batched = Y[:, n * batch_size : (n + 1) * batch_size]
                 AL, caches = self.forward_prop(X_batched, parameters)
                 grads = self.backward_prop(AL, Y_batched, caches)
-                parameters = self.update_parameters(parameters, grads, learning_rate, m, LAMBDA)
+                parameters = self.update_parameters(parameters, grads, learning_rate, m, Lambda)
 
             if i % 10 == 0:
                 AL, caches = self.forward_prop(X, parameters)
@@ -96,7 +99,7 @@ class FeedForwardClassifier:
 
         return parameters
 
-    def stochastic_gradient_descent(self, X, Y, parameters, learning_rate, num_iterations, LAMBDA):
+    def stochastic_gradient_descent(self, X, Y, parameters, learning_rate, num_iterations, Lambda):
         """
         Arguments:
         X : a numpy array of dimension [number of features] x [number of training examples], containing the
@@ -122,7 +125,7 @@ class FeedForwardClassifier:
                 label = np.array([Y[j]])
                 AL, caches = self.forward_prop(data_in, parameters)
                 grads = self.backward_prop(AL, label, caches)
-                parameters = self.update_parameters(parameters, grads, learning_rate, m, LAMBDA)
+                parameters = self.update_parameters(parameters, grads, learning_rate, m, Lambda)
 
             if i % 100 == 0:
                 loss = self.loss(AL, Y, parameters)
@@ -309,11 +312,11 @@ class FeedForwardClassifier:
 
         for l in range(1, L + 1):
             w = parameters["W" + str(l)]
-            reg += self.LAMBDA / float(2 * m) * np.sum(np.multiply(w, w))
+            reg += self.Lambda / float(2 * m) * np.sum(np.multiply(w, w))
 
         return loss + reg
 
-    def update_parameters(self, params, grads, learning_rate, m, LAMBDA):
+    def update_parameters(self, params, grads, learning_rate, m, Lambda):
         """
         Arguments:
         params - a python dictionary containing the weights and biases of the layers in the network
@@ -327,7 +330,7 @@ class FeedForwardClassifier:
         L = len(params) // 2
 
         for l in range(1, L + 1):
-            params["W" + str(l)] = params["W" + str(l)] - learning_rate * (grads["dW" + str(l)] + LAMBDA / float(m) * params["W" + str(l)])
+            params["W" + str(l)] = params["W" + str(l)] - learning_rate * (grads["dW" + str(l)] + Lambda / float(m) * params["W" + str(l)])
             params["b" + str(l)] = params["b" + str(l)] - learning_rate * grads["db" + str(l)]
 
         return params
@@ -367,7 +370,7 @@ class FeedForwardClassifier:
         """
         h = self.predict(data)
         max = np.argmax(h)
-        return self.CLASS_LIST[max]
+        return self.class_labels[max]
 
     def predict(self, data):
         """

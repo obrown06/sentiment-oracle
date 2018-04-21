@@ -85,7 +85,6 @@ class GloveFeatureExtractor:
         embeddings = self.initialize_embeddings(ntokens, embed_size)
 
         i = 0
-
         with open(embeddings_file, encoding="utf-8", mode="r") as file:
             for line in file:
                 i = i + 1
@@ -99,6 +98,7 @@ class GloveFeatureExtractor:
                     embeddings[id] = embed_vector
                 if i == 100000:
                     break
+
 
 
 

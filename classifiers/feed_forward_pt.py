@@ -10,12 +10,19 @@ torch.manual_seed(1)
 
 class FeedForwardClassifier(nn.Module):
 
-    def __init__(self, embedding_dim, hidden_dim, num_labels, class_list):
+    def __init__(self, data_info, classifier_info):
         super(FeedForwardClassifier, self).__init__()
-        self.input_layer = nn.Linear(embedding_dim, hidden_dim)
-        self.hidden_layer = nn.Linear(hidden_dim, hidden_dim)
-        self.output_layer = nn.Linear(hidden_dim, num_labels)
-        self.class_list = class_list
+        self.data_info = data_info
+        self.classifier_info = classifier_info
+
+        self.alpha = classifier_info["alpha"]
+        self.nbatches = classifier_info["nbatches"]
+        self.nepochs = classifier_info["nepochs"]
+        self.class_labels = data_info["class_labels"]
+
+        self.input_layer = nn.Linear(classifier_info["embedding_dim"], classifier_info["hidden_dim"])
+        self.hidden_layer = nn.Linear(classifier_info["hidden_dim"], classifier_info["hidden_dim"])
+        self.output_layer = nn.Linear(classifier_info["hidden_dim"], classifier_info["output_dim"])
 
     def forward(self, x):
         x = F.relu(self.input_layer(x))
@@ -24,18 +31,18 @@ class FeedForwardClassifier(nn.Module):
         label_scores = F.log_softmax(x, dim=1)
         return label_scores
 
-    def train(self, data, target, ALPHA = 0.01, EPOCHS = 10, NBATCHES = 10):
+    def train(self, data, target):
         data, target = torch.from_numpy(data), torch.from_numpy(target)
         data = torch.transpose(data, 0, 1)
         data, target = data.type(torch.FloatTensor), target.type(torch.LongTensor)
-        optimizer = optim.SGD(self.parameters(), lr=ALPHA, momentum=0.9)
+        optimizer = optim.SGD(self.parameters(), lr=self.alpha, momentum=0.9)
         criterion = nn.NLLLoss()
 
-        batched_data, batched_targets = self.batch(data, target, NBATCHES)
+        batched_data, batched_targets = self.batch(data, target, self.nbatches)
 
 
-        for epoch in range(EPOCHS):
-            for i in range(NBATCHES):
+        for epoch in range(self.nepochs):
+            for i in range(self.nbatches):
                 data_batch, target_batch = Variable(batched_data[i]), Variable(batched_targets[i])
                 optimizer.zero_grad()
                 out = self.forward(data_batch)
@@ -64,7 +71,6 @@ class FeedForwardClassifier(nn.Module):
     def test(self, data, target):
         """
         Arguments:
-        class_list : a python list containing the possible output class labels
         data : a numpy array of dimension [number of features] x [number of test examples], containing the
             values of every feature in every document in the test set; includes a row of 1s which pair
             with the w[0] (the bias)
@@ -81,14 +87,13 @@ class FeedForwardClassifier(nn.Module):
             doc_data = data[:,i].reshape(data[:,i].shape[0], 1)
             predictions = np.append(predictions, self.classify(doc_data))
 
-        predictions = predictions.reshape(target.shape)
+        #predictions = predictions.reshape(target.shape)
 
         return predictions, target
 
     def classify(self, data):
         """
         Arguments:
-        class_list : a python list containing the possible output class labels
         data     : a numpy array of dimension [number of features] x [1], containing the
                values of every feature in a single document; includes a row of 1s which pair
                with the w[0] (the bias)
@@ -97,7 +102,7 @@ class FeedForwardClassifier(nn.Module):
             max : a scalar containing the predicted class label for the given document
         """
         class_index = self.predict(data)
-        return self.class_list[class_index]
+        return self.class_labels[class_index]
 
     def predict(self, data):
         """

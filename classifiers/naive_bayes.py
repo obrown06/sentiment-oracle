@@ -5,6 +5,10 @@ from sklearn import metrics
 
 class NaiveBayesBernoulliClassifier:
 
+    def __init__(self, data_info):
+        self.data_info = data_info
+        self.class_labels = set(data_info["class_labels"])
+
     def train(self, classes_to_docs):
         """
         Arguments:
@@ -12,31 +16,12 @@ class NaiveBayesBernoulliClassifier:
                           segregated by class label.
 
         Stores:
-            self.labels : a set containing labels for all classes
             self.priors : a set containing prior probabilities of observing each class
             self.vocab_probs : a dict of dicts containing the probabilities of observing each
                                word in each class, organized as : vocab[word][class_label]
         """
-        self.labels = self.record_class_labels(classes_to_docs)
         self.priors = self.compute_priors(classes_to_docs)
         self.vocab_probs = self.compute_vocab_probs(classes_to_docs)
-
-    def record_class_labels(self, classes_to_docs):
-        """
-        Arguments:
-        classes_to_docs : a python dict containing the set of training documents
-                          segregated by class label.
-
-        Returns:
-        labels : a set containing the labels for all classes in the classes_to_docs dict.
-        """
-
-        labels = set()
-
-        for class_label in classes_to_docs:
-            labels.add(class_label)
-
-        return labels;
 
     def compute_priors(self, classes_to_docs):
         """
@@ -115,7 +100,7 @@ class NaiveBayesBernoulliClassifier:
         """
         class_probs = dict()
 
-        for label in self.labels:
+        for label in self.class_labels:
             class_probs[label] = 1 / float(num_docs_in_class + 2)
 
         return class_probs
@@ -153,13 +138,13 @@ class NaiveBayesBernoulliClassifier:
                        training vocabulary.
 
         Returns:
-        most_likely_class_label : the class label in self.labels which results in the highest
+        most_likely_class_label : the class label in self.class_labels which results in the highest
                                   return value from predict()
         """
         max_prob = ""
         most_likely_class_label = ""
 
-        for class_label in self.labels:
+        for class_label in self.class_labels:
             prob = self.predict(class_label, document, default_prob)
 
             if max_prob == "" or prob > max_prob:
@@ -219,6 +204,10 @@ class NaiveBayesBernoulliClassifier:
 
 class NaiveBayesMultinomialClassifier:
 
+    def __init__(self, data_info):
+        self.data_info = data_info
+        self.class_labels = set(data_info["class_labels"])
+
     def train(self, classes_to_docs):
         """
         Arguments:
@@ -226,31 +215,13 @@ class NaiveBayesMultinomialClassifier:
                           segregated by class label.
 
         Stores:
-            self.labels : a set containing labels for all classes
             self.priors : a set containing prior probabilities of observing each class
             self.vocab_probs : a dict of dicts containing the probabilities of observing each
                                word in each class, organized as : vocab[word][class_label]
         """
-        self.labels = self.record_class_labels(classes_to_docs)
         self.priors = self.compute_priors(classes_to_docs)
         vocab_counts, self.class_vocab_totals = self.compute_vocab_counts(classes_to_docs)
         self.vocab_probs = self.compute_vocab_probs(vocab_counts, self.class_vocab_totals)
-
-    def record_class_labels(self, classes_to_docs):
-        """
-        Arguments:
-        classes_to_docs : a python dict containing the set of training documents
-                          segregated by class label.
-
-        Returns:
-        labels : a set containing the labels for all classes in the classes_to_docs dict.
-        """
-        labels = set()
-
-        for class_label in classes_to_docs:
-            labels.add(class_label)
-
-        return labels
 
     def compute_priors(self, classes_to_docs):
         """
@@ -327,12 +298,12 @@ class NaiveBayesMultinomialClassifier:
     def create_empty_class_counts_dict(self):
         """
         Returns:
-        class_counts : a dictionary mapping each label in self.labels to an observation count initialized
+        class_counts : a dictionary mapping each label in self.class_labels to an observation count initialized
                        to zero (to be modified as observations are made).
         """
         class_counts = dict()
 
-        for label in self.labels:
+        for label in self.class_labels:
             class_counts[label] = 0
 
         return class_counts
@@ -403,13 +374,13 @@ class NaiveBayesMultinomialClassifier:
         document : a list of strings containing the words in a document
 
         Returns:
-        most_likely_class_label : the class label in self.labels which results in the highest
+        most_likely_class_label : the class label in self.class_labels which results in the highest
                                   return value from predict()
         """
         max_prob = ""
         most_likely_class_label = ""
 
-        for class_label in self.labels:
+        for class_label in self.class_labels:
             prob = self.predict(class_label, document)
 
             if max_prob == "" or prob > max_prob:
