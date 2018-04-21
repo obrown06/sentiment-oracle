@@ -35,7 +35,7 @@ The relative performance on these datasets is described below. The set of classi
 
 ## Preprocessing
 
-Preprocessing steps on text strings include negation tracking, contraction expansion, and punctuation removal. We found that stopword removal resulted in diminished performance across all classifiers even after retaining obviously those with obvious connotations.
+Preprocessing steps on text strings include negation tracking, contraction expansion, and punctuation removal. We found that stopword removal diminished performance across all classifiers -- even after retaining those words with obvious connotations.
 
 All preprocessing code lives in `/data/clean.py`.
 
@@ -43,18 +43,29 @@ All preprocessing code lives in `/data/clean.py`.
 
 ## Feature Extraction
 
-Depending on the classifier, we used one of three kinds of features.
+Depending on the classifier, we use one of three kinds of features.
 
-**words**
+**words** (Bernoulli + Multinomial Naive Bayes)
 
-The Bernoulli and Multinomial
+Both Bernoulli and Multinomial Naive Bayes use individual words as features. MNB constructs conditional probabilities based on on the number of instances of a word in a class, while BNB does the same based on the number of documents in the class which contain the word. Both classifiers "train" by building a vocabulary of word counts across all documents in their corpus; feature extraction is as simple as splitting documents into individual tokens!
 
-**Bag of Words**
+**Bag-Of-NGrams** (LR, NN)
 
-**Word Embeddings**
+Both the Logistic Regression and the two Feed-forward Neural Network classifiers use Bag-Of-NGrams as features.
+
+In the Bag-Of-Words (BOW) model, we construct a vocabulary *V* from a subset of words in the document condition based on some defined criterion (in our case, frequency) and afterwards representing a document *D* as a vector of the number of occurrences in *D* of each of the words in *V*.
+
+For example, if our vocabulary is determined to be `{"it", "octupus", "best", "times"}`, we would represent a new document `D = "It was the best of times, it was the worst of times" ` with the vector `[2, 0, 1, 2]`.
+
+The Bag of Ngrams model generalizes BOW to sequences of one **or more** adjacent words -- known as Ngrams. For example, a vocabulary containing 1 and 2 grams might be `{"it", "octopus", "best", "it was", "was the"}`. With this vocabulary, the previous document would be represented as `[2, 0, 1, 2, 2]`
+
+Inevitably, lower order grams will be more common than their higher-order counterparts, so it is common when building a vocabulary to allocate percentages to tokens of different gram-numbers. We found evenly splitting our vocabulary between 1-grams and 2-grams significantly boosted performance; extending to higher order grams did not.
+
+All extraction functionality is wrapped in an extractor class (which can be pickled and reused) in `/data/bag_of_ngrams_extractor.py`. All NGram tokenization and sorting was performed with NLTK. 
 
 
-TODO: tf-idf weighting
+**Word Embeddings** (LSTM)
+
 
 ## Performance
 
