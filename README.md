@@ -55,17 +55,20 @@ Both the Logistic Regression and the two Feed-forward Neural Network classifiers
 
 In the Bag-Of-Words (BOW) model, we construct a vocabulary *V* from a subset of words in the document condition based on some defined criterion (in our case, frequency) and afterwards representing a document *D* as a vector of the number of occurrences in *D* of each of the words in *V*.
 
-For example, if our vocabulary is determined to be `{"it", "octupus", "best", "times"}`, we would represent a new document `D = "It was the best of times, it was the worst of times" ` with the vector `[2, 0, 1, 2]`.
+For example, under a vocabulary *V* : `{"it", "octupus", "best", "times"}`, we would represent a new document *D* : `"It was the best of times, it was the worst of times" ` with the vector `[2, 0, 1, 2]`.
 
-The Bag of Ngrams model generalizes BOW to sequences of one **or more** adjacent words -- known as Ngrams. For example, a vocabulary containing 1 and 2 grams might be `{"it", "octopus", "best", "it was", "was the"}`. With this vocabulary, the previous document would be represented as `[2, 0, 1, 2, 2]`
+The Bag-of-Ngrams model generalizes BOW to sequences of one **or more** adjacent words -- known as Ngrams. An example of a vocabulary containing both 1-grams and 2-grams would be *V* = `{"it", "octopus", "best", "it was", "was the"}`; under this vocabulary, the previous document *D* would be represented as `[2, 0, 1, 2, 2]`
 
-Inevitably, lower order grams will be more common than their higher-order counterparts, so it is common when building a vocabulary to allocate percentages to tokens of different gram-numbers. We found evenly splitting our vocabulary between 1-grams and 2-grams significantly boosted performance; extending to higher order grams did not.
+Inevitably, lower order grams will be more common than their higher-order counterparts, so it is common when building a vocabulary to allocate percentages to tokens of different gram-numbers. We found that evenly splitting our vocabulary between 1-grams and 2-grams significantly boosted classifier performance; extending to higher order grams did not.
 
-All extraction functionality is wrapped in an extractor class (which can be pickled and reused) in `/data/bag_of_ngrams_extractor.py`. All NGram tokenization and sorting was performed with NLTK. 
+All extraction functionality is wrapped in the  extractor class (which can be pickled and reused) found in `/data/bag_of_ngrams_extractor.py`. NGram tokenization and sorting is performed with NLTK.
 
 
 **Word Embeddings** (LSTM)
 
+While the Bag-of-Ngrams model adeptly captures frequency of individual words, it fails to encode any information about the semantic relationships between words. Word Embeddings expresses this second category of information by converting each word to a high-dimensional vector of floating point numbers which, when trained based on some co-occurrence criteria over a sufficiently sized document corpus, represent some portion of its semantic meaning.
+
+Word embeddings can be either trained along with the classifier in question or imported from some other corpus. I used pre-trained [GloVe embeddings](https://nlp.stanford.edu/projects/glove/) to generate input for the PyTorch LSTM (see `/classifiers/lstm_pytorch.py` and `/data/glove_extractor.py`) but caution against following the evident procedure too closely, as its performance has been lackluster. On the other hand, the Keras LSTM (see `/classifiers/lstm_keras.py` and `/data/keras_extractor.py`) includes an Embedding layer initialized to random weights which is then trained in parallel with the LSTM layers. 
 
 ## Performance
 
