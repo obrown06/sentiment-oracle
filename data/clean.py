@@ -69,7 +69,7 @@ class DocumentCleaner:
                 self.add_negations(word_list)
 
             self.remove_terminators(word_list)
-            #remove_stop_words(word_list)
+            #self.remove_stop_words(word_list)
 
             documents[i] = " ".join(word_list)
 

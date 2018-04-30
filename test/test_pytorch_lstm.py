@@ -15,10 +15,11 @@ import pickle
 print("#################################################################### \n")
 print("TESTING: PYTORCH LSTM\n")
 print("####################################################################\n")
-PATH_TO_EXTRACTOR = "../pickle/pytorch_lstm_extractor.p"
-PATH_TO_CLASSIFIER = "../pickle/pytorch_lstm_classifier.p"
-classifier = pickle.load(open(PATH_TO_CLASSIFIER, "rb"))
-extractor = pickle.load(open(PATH_TO_EXTRACTOR, "rb"))
+
+AMAZON_PREFIX = "../pickle/amazon/"
+
+classifier = pickle.load(open(AMAZON_PREFIX + "pytorch_lstm_classifier.p", "rb"))
+extractor = pickle.load(open(AMAZON_PREFIX + "pytorch_lstm_extractor.p", "rb"))
 
 data_info = classifier.data_info
 classifier_info = classifier.classifier_info

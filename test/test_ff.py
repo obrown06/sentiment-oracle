@@ -2,7 +2,6 @@ import sys
 sys.path.insert(0, '../data/')
 sys.path.insert(0, '../classifiers/')
 import test_utils
-import bow_extractor
 import pickle
 import json
 import numpy as np
@@ -13,8 +12,10 @@ print("#################################################################### \n")
 print("TESTING: FEED FORWARD\n")
 print("####################################################################\n")
 
-PATH_TO_EXTRACTOR = "../pickle/ff_extractor.p"
-PATH_TO_CLASSIFIER = "../pickle/ff_classifier.p"
+AMAZON_PREFIX = "../pickle/amazon/"
+PATH_TO_CLASSIFIER = AMAZON_PREFIX + "ff_classifier.p"
+PATH_TO_EXTRACTOR = AMAZON_PREFIX + "ff_extractor.p"
+
 classifier = pickle.load(open(PATH_TO_CLASSIFIER, "rb"))
 extractor = pickle.load(open(PATH_TO_EXTRACTOR, "rb"))
 

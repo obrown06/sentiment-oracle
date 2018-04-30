@@ -12,7 +12,7 @@ import pickle
 import json
 import glove_extractor
 import keras_extractor
-import bow_extractor
+import bag_of_ngrams_extractor
 import numpy as np
 
 PHRASE_COL_INDEX = 2
@@ -29,13 +29,13 @@ def generate_nb_input(documents, labels, label_set):
 def generate_input(documents, extractor, SHOULD_ADD_NEGATIONS=True):
     cleaner = clean.DocumentCleaner()
     documents = cleaner.clean(documents, SHOULD_ADD_NEGATIONS)
-    bow_input = extractor.extract_features(documents)
-    return bow_input
+    input = extractor.extract_features(documents)
+    return input
 
-def generate_bow_extractor(documents, nfeatures, ngrams):
+def generate_bag_of_ngrams_extractor(documents, nfeatures, ngrams):
     cleaner = clean.DocumentCleaner()
     documents = cleaner.clean(documents, True)
-    extractor = bow_extractor.BOWFeatureExtractor()
+    extractor = bag_of_ngrams_extractor.BagOfNGramsFeatureExtractor()
     extractor.build_feature_set(documents, nfeatures, ngrams)
 
     return extractor
@@ -117,6 +117,28 @@ def load_balanced_yelp_data(n_samples_per_class, start_index, path_to_data, clas
 
     return documents, labels, end_index
 
+def load_yelp_data(n_samples, start_index, path_to_data, class_labels):
+    documents = []
+    labels = []
+    end_index = 0
+
+    with open(path_to_data, 'r', encoding='utf8') as file:
+        for i, line in enumerate(file):
+            if i < start_index:
+                continue
+
+            data = json.loads(line)
+            document = data["text"]
+            label = data["stars"]
+            documents.append(document)
+            labels.append(label)
+
+            if i == start_index + n_samples:
+                end_index = i
+                break
+
+    return documents, labels, end_index
+
 def load_balanced_rt_data(n_samples_per_class, start_index, path_to_data, class_labels):
     documents = []
     labels = []
@@ -166,6 +188,42 @@ def load_rt_data(n_samples, start_index, path_to_data, class_labels=None):
 
             if reader.line_num == start_index + n_samples:
                 end_index = reader.line_num
+                break
+
+    return documents, labels, end_index
+
+    def strip_labels(self, documents, class_names):
+        texts = []
+        labels = []
+
+        for d in documents:
+            [class_name, text] = d.split(' ', 1)
+
+            for i in range(len(class_names)):
+                if class_name == class_names[i]:
+                    labels.append(i)
+                    texts.append(text)
+
+        return texts, np.array(labels).T
+
+def load_amazon_data(n_samples, start_index, path_to_data, class_labels):
+    documents = []
+    labels = []
+    end_index = 0
+
+    human_readable_names_to_labels = {"__label__1" : 1, "__label__2" : 2}
+
+    with open(path_to_data, 'r', encoding='utf8') as file:
+        for i, line in enumerate(file):
+            if i < start_index:
+                continue
+
+            [name, document] = line.split(' ', 1)
+            documents.append(document)
+            labels.append(human_readable_names_to_labels[name])
+
+            if i == start_index + n_samples:
+                end_index = i
                 break
 
     return documents, labels, end_index

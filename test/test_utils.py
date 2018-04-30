@@ -35,7 +35,7 @@ def test_statistics(predictions, actual, pos_label):
     specificity = tn / (tn + fp)
     accuracy = (tp + tn) / (tp + tn + fn + fp)
 
-    fpr, tpr, thresholds = metrics.roc_curve(actual, predictions, pos_label = 1)
+    fpr, tpr, thresholds = metrics.roc_curve(actual, predictions, pos_label)
     auc = metrics.auc(fpr, tpr)
 
     return precision, recall, specificity, accuracy, auc

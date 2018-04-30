@@ -19,23 +19,25 @@ print("#################################################################### \n")
 print("GENERATING INPUT : LSTM\n")
 print("####################################################################\n")
 
-# (Unbalanced) n_samples_train: 124000
-# (Unbalanced) n_samples_val: 1000
-# (Unbalanced) n_samples_test: 1000
+AMAZON_PREFIX = "../pickle/amazon/"
 
-data_info = {"source" : "ROTTEN_TOMATOES",
-             "path" : "../data/train.tsv",
-             "is_balanced" : True,
-             "n_samples_train" : 6300,
-             "n_samples_val" : 100,
-             "n_samples_test" : 100,
-             "class_labels" : [1, 2, 3, 4, 5]
+PATH_TO_CLASSIFIER = AMAZON_PREFIX + "keras_lstm_classifier.h5"
+PATH_TO_WRAPPER = AMAZON_PREFIX + "keras_lstm_wrapper.p"
+PATH_TO_EXTRACTOR = AMAZON_PREFIX + "keras_lstm_extractor.p"
+
+data_info = {"source" : "AMAZON",
+             "path" : "../data/train.ft.txt",
+             "is_balanced" : False,
+             "n_samples_train" : 1000000,
+             "n_samples_val" : 100000,
+             "n_samples_test" : 100000,
+             "class_labels" : [1, 2]
 }
 
 classifier_info = {"embed_size" : 300,
-                   "batch_size" : 32,
-                   "nepochs" : 10,
-                   "alpha" : 0.002,
+                   "batch_size" : 64,
+                   "nepochs" : 5,
+                   "alpha" : 0.001,
                    "optimizer_type" : "nadam",
                    "embedding_output_dim" : 32,
                    "max_word_count" : 60,
@@ -43,12 +45,10 @@ classifier_info = {"embed_size" : 300,
                    "dropout_ratio" : 0.6
 }
 
-PATH_TO_WRAPPER_FILE = "../pickle/keras_lstm_wrapper.p"
-PATH_TO_KERAS_FILE = "../pickle/keras_lstm_classifier.h5"
 
 train_documents, train_labels, val_documents, val_labels, test_documents, test_labels, end_index = data_handler.load_data(data_info["source"], data_info["path"], data_info["n_samples_train"], data_info["n_samples_val"], data_info["n_samples_test"], data_info["class_labels"], is_balanced=data_info["is_balanced"])
 extractor = data_handler.generate_keras_extractor(np.array(train_documents))
-pickle.dump(extractor, open("../pickle/keras_lstm_extractor.p", "wb"))
+pickle.dump(extractor, open(PATH_TO_EXTRACTOR, "wb"))
 
 train_input = data_handler.generate_input(train_documents, extractor)
 val_input = data_handler.generate_input(val_documents, extractor)
@@ -58,7 +58,6 @@ val_labels = np.array(val_labels)
 
 train_label_input = keras.utils.to_categorical(train_labels - 1, len(data_info["class_labels"]))
 val_label_input = keras.utils.to_categorical(val_labels - 1, len(data_info["class_labels"]))
-print("val_label_input", val_label_input)
 
 print("#################################################################### \n")
 print("TRAINING: LSTM\n")
@@ -71,7 +70,7 @@ lstm_classifier = lstm_keras.KerasLSTMClassifier(data_info, classifier_info)
 shuffle(train_input, train_label_input)
 
 lstm_classifier.train(train_input, train_label_input, val_input, val_label_input)
-lstm_keras.pickle_keras(lstm_classifier, PATH_TO_KERAS_FILE, PATH_TO_WRAPPER_FILE)
+lstm_keras.pickle_keras(lstm_classifier, PATH_TO_CLASSIFIER, PATH_TO_WRAPPER)
 
 print("#################################################################### \n")
 print("VALIDATING: LSTM\n")

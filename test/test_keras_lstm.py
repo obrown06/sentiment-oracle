@@ -14,12 +14,14 @@ print("#################################################################### \n")
 print("GENERATING INPUT: KERAS LSTM\n")
 print("####################################################################\n")
 
+AMAZON_PREFIX = "../pickle/amazon/"
 
-PATH_TO_EXTRACTOR = "../pickle/keras_lstm_extractor.p"
-PATH_TO_KERAS = "../pickle/keras_lstm_classifier.h5"
-PATH_TO_WRAPPER = "../pickle/keras_lstm_wrapper.p"
+PATH_TO_CLASSIFIER = AMAZON_PREFIX + "keras_lstm_classifier.h5"
+PATH_TO_WRAPPER = AMAZON_PREFIX + "keras_lstm_wrapper.p"
+PATH_TO_EXTRACTOR = AMAZON_PREFIX + "keras_lstm_extractor.p"
+
 extractor = pickle.load(open(PATH_TO_EXTRACTOR, "rb"))
-classifier = lstm_keras.load_keras(PATH_TO_KERAS, PATH_TO_WRAPPER)
+classifier = lstm_keras.load_keras(PATH_TO_CLASSIFIER, PATH_TO_WRAPPER)
 data_info = classifier.data_info
 classifier_info = classifier.classifier_info
 

@@ -4,7 +4,7 @@ from nltk.util import ngrams
 from nltk.tokenize import word_tokenize
 from nltk.probability import FreqDist
 
-class BOWFeatureExtractor:
+class BagOfNGramsFeatureExtractor:
 
     def build_feature_set(self, documents, NFEATURES, NGRAMS):
         """

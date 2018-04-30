@@ -12,8 +12,10 @@ print("#################################################################### \n")
 print("TESTING: LOGISTIC REGRESSION\n")
 print("####################################################################\n")
 
-PATH_TO_EXTRACTOR = "../pickle/lr_extractor.p"
-PATH_TO_CLASSIFIER = "../pickle/lr_classifier.p"
+AMAZON_PREFIX = "../pickle/amazon/"
+PATH_TO_CLASSIFIER = AMAZON_PREFIX + "lr_classifier.p"
+PATH_TO_EXTRACTOR = AMAZON_PREFIX + "lr_extractor.p"
+
 classifier = pickle.load(open(PATH_TO_CLASSIFIER, "rb"))
 extractor = pickle.load(open(PATH_TO_EXTRACTOR, "rb"))
 
@@ -42,12 +44,18 @@ print("####################################################################\n")
 
 predictions, actual = classifier.test(test_input, test_label_input)
 accuracy, near_accuracy, accurate_polarity = test_utils.multiclass_accuracy(predictions, actual)
-
+precision, recall, specificity, accuracy, auc = test_utils.test_statistics(predictions, actual, pos_label=2)
 print("####################################################################\n")
 
-print("RESULTS:\n")
+print("RESULTS: \n")
 print("Accuracy: ", accuracy)
+print("ONLY RELEVANT FOR FINE GRAINED:")
 print("Near Accuracy: ", near_accuracy)
 print("Accurate Polarity: ", accurate_polarity)
+print("ONLY RELEVANT FOR BINARY:")
+print("Recall: ", recall)
+print("Specificity: ", specificity)
+print("Precision: ", precision)
+print("AUC: ", auc)
 
 print("####################################################################")
