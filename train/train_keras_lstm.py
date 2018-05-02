@@ -10,7 +10,7 @@ import lstm_keras
 import data_handler
 import numpy as np
 
-def shuffle(a, b): # Shuffles 2 arrays with the same order
+def shuffle(a, b):
     s = np.arange(a.shape[0])
     np.random.shuffle(s)
     return a[s], b[s]
@@ -20,18 +20,19 @@ print("GENERATING INPUT : LSTM\n")
 print("####################################################################\n")
 
 AMAZON_PREFIX = "../pickle/amazon/"
+YELP_PREFIX = "../pickle/yelp/"
 
-PATH_TO_CLASSIFIER = AMAZON_PREFIX + "keras_lstm_classifier.h5"
-PATH_TO_WRAPPER = AMAZON_PREFIX + "keras_lstm_wrapper.p"
-PATH_TO_EXTRACTOR = AMAZON_PREFIX + "keras_lstm_extractor.p"
+PATH_TO_CLASSIFIER = YELP_PREFIX + "keras_lstm_classifier.h5"
+PATH_TO_WRAPPER = YELP_PREFIX + "keras_lstm_wrapper.p"
+PATH_TO_EXTRACTOR = YELP_PREFIX + "keras_lstm_extractor.p"
 
-data_info = {"source" : "AMAZON",
-             "path" : "../data/train.ft.txt",
+data_info = {"source" : "YELP",
+             "path" : "../data/review.json",
              "is_balanced" : False,
              "n_samples_train" : 1000000,
              "n_samples_val" : 100000,
              "n_samples_test" : 100000,
-             "class_labels" : [1, 2]
+             "class_labels" : [1, 2, 3, 4, 5]
 }
 
 classifier_info = {"embed_size" : 300,

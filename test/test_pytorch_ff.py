@@ -13,8 +13,10 @@ print("TESTING: PYTORCH FEED FORWARD\n")
 print("####################################################################\n")
 
 AMAZON_PREFIX = "../pickle/amazon/"
-PATH_TO_CLASSIFIER = AMAZON_PREFIX + "pytorch_ff_classifier.p"
-PATH_TO_EXTRACTOR = AMAZON_PREFIX + "pytorch_ff_extractor.p"
+YELP_PREFIX = "../pickle/yelp/"
+
+PATH_TO_CLASSIFIER = YELP_PREFIX + "pytorch_ff_classifier.p"
+PATH_TO_EXTRACTOR = YELP_PREFIX + "pytorch_ff_extractor.p"
 
 classifier = pickle.load(open(PATH_TO_CLASSIFIER, "rb"))
 extractor = pickle.load(open(PATH_TO_EXTRACTOR, "rb"))

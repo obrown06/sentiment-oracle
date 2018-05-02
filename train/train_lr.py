@@ -13,14 +13,18 @@ print("GENERATING INPUT: LOGISTIC REGRESSION\n")
 print("####################################################################\n")
 
 AMAZON_PREFIX = "../pickle/amazon/"
+YELP_PREFIX = "../pickle/yelp/balanced/"
 
-data_info = {"source" : "AMAZON",
-             "path" : "../data/train.ft.txt",
+PATH_TO_CLASSIFIER = YELP_PREFIX + "lr_classifier.p"
+PATH_TO_EXTRACTOR = YELP_PREFIX + "lr_extractor.p"
+
+data_info = {"source" : "YELP",
+             "path" : "../data/review.json",
              "is_balanced" : True,
              "n_samples_train" : 300000,
-             "n_samples_val" : 30000,
-             "n_samples_test" : 30000,
-             "class_labels" : [1, 2]
+             "n_samples_val" : 10000,
+             "n_samples_test" : 10000,
+             "class_labels" : [1, 2, 3, 4, 5]
 }
 
 classifier_info = {"nfeatures" : 2000,
@@ -30,10 +34,6 @@ classifier_info = {"nfeatures" : 2000,
                    "lambda" : 1
 
 }
-
-AMAZON_PREFIX = "../pickle/amazon/"
-PATH_TO_CLASSIFIER = AMAZON_PREFIX + "lr_classifier.p"
-PATH_TO_EXTRACTOR = AMAZON_PREFIX + "lr_extractor.p"
 
 train_documents, train_labels, val_documents, val_labels, test_documents, test_labels, end_index = data_handler.load_data(data_info["source"], data_info["path"], data_info["n_samples_train"], data_info["n_samples_val"], data_info["n_samples_test"], data_info["class_labels"], is_balanced=data_info["is_balanced"])
 

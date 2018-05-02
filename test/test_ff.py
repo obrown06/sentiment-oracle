@@ -11,10 +11,11 @@ import data_handler
 print("#################################################################### \n")
 print("TESTING: FEED FORWARD\n")
 print("####################################################################\n")
-
+YELP_PREFIX = "../pickle/yelp/"
 AMAZON_PREFIX = "../pickle/amazon/"
-PATH_TO_CLASSIFIER = AMAZON_PREFIX + "ff_classifier.p"
-PATH_TO_EXTRACTOR = AMAZON_PREFIX + "ff_extractor.p"
+
+PATH_TO_CLASSIFIER = YELP_PREFIX + "ff_classifier.p"
+PATH_TO_EXTRACTOR = YELP_PREFIX + "ff_extractor.p"
 
 classifier = pickle.load(open(PATH_TO_CLASSIFIER, "rb"))
 extractor = pickle.load(open(PATH_TO_EXTRACTOR, "rb"))

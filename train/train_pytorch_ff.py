@@ -13,23 +13,25 @@ print("#################################################################### \n")
 print("GENERATING INPUT: PYTORCH FEED FORWARD\n")
 print("####################################################################\n")
 
+YELP_PREFIX = "../pickle/yelp/"
 AMAZON_PREFIX = "../pickle/amazon/"
-PATH_TO_CLASSIFIER = AMAZON_PREFIX + "pytorch_ff_classifier.p"
-PATH_TO_EXTRACTOR = AMAZON_PREFIX + "pytorch_ff_extractor.p"
+
+PATH_TO_CLASSIFIER = YELP_PREFIX + "pytorch_ff_classifier.p"
+PATH_TO_EXTRACTOR = YELP_PREFIX + "pytorch_ff_extractor.p"
 
 
-data_info = {"source" : "AMAZON",
-             "path" : "../data/train.ft.txt",
+data_info = {"source" : "YELP",
+             "path" : "../data/review.json",
              "is_balanced" : False,
-             "n_samples_train" : 3500000,
-             "n_samples_val" : 200000,
-             "n_samples_test" : 200000,
-             "class_labels" : [1, 2]
+             "n_samples_train" : 300000,
+             "n_samples_val" : 30000,
+             "n_samples_test" : 30000,
+             "class_labels" : [1, 2, 3, 4, 5]
 }
 
 classifier_info = {
                    "nbatches" : 50,
-                   "nepochs" : 500,
+                   "nepochs" : 200,
                    "nfeatures" : 2000,
                    "ngrams" : 2,
                    "alpha" : 0.001,

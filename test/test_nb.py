@@ -15,7 +15,9 @@ print("TESTING: NAIVE BAYES\n")
 print("####################################################################\n")
 
 AMAZON_PREFIX = "../pickle/amazon/"
-PATH_TO_CLASSIFIER = AMAZON_PREFIX + "nb_multinomial_classifier.p"
+YELP_PREFIX = "../pickle/yelp/balanced/"
+
+PATH_TO_CLASSIFIER = YELP_PREFIX + "nb_multinomial_classifier.p"
 
 classifier = pickle.load(open(PATH_TO_CLASSIFIER, "rb"))
 data_info = classifier.data_info
@@ -34,6 +36,7 @@ print("####################################################################\n")
 predictions, actual = classifier.test(test_input)
 accuracy, near_accuracy, accurate_polarity = test_utils.multiclass_accuracy(predictions, actual)
 precision, recall, specificity, accuracy, auc = test_utils.test_statistics(predictions, actual, pos_label=2)
+
 print("####################################################################\n")
 
 print("RESULTS: \n")
