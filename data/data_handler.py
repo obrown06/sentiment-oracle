@@ -106,14 +106,15 @@ def load_balanced_yelp_data(n_samples_per_class, start_index, path_to_data, clas
             document = data["text"]
             label = data["stars"]
 
-            if class_counts[label] < n_samples_per_class:
-                documents.append(document)
-                labels.append(label)
-                class_counts[label] = class_counts[label] + 1
+            if label in class_counts:
+                if class_counts[label] < n_samples_per_class:
+                    documents.append(document)
+                    labels.append(label)
+                    class_counts[label] = class_counts[label] + 1
 
-            if full(class_counts, n_samples_per_class):
-                end_index = i
-                break
+                if full(class_counts, n_samples_per_class):
+                    end_index = i
+                    break
 
     return documents, labels, end_index
 

@@ -17,6 +17,9 @@ print("####################################################################\n")
 # (Unbalanced) n_samples_val: 1000
 # (Unbalanced) n_samples_test: 1000
 
+YELP_PREFIX = "../pickle/yelp/balanced/"
+AMAZON_PREFIX = "../pickle/amazon/balanced/"
+
 data_info = {"source" : "ROTTEN_TOMATOES",
              "path" : "../data/train.tsv",
              "is_balanced" : True,

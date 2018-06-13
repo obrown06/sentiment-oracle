@@ -12,7 +12,7 @@ print("#################################################################### \n")
 print("GENERATING INPUT: FEED FORWARD\n")
 print("####################################################################\n")
 
-YELP_PREFIX = "../pickle/yelp/"
+YELP_PREFIX = "../pickle/yelp/balanced/"
 AMAZON_PREFIX = "../pickle/amazon/"
 
 PATH_TO_CLASSIFIER = YELP_PREFIX + "ff_classifier.p"
@@ -20,19 +20,19 @@ PATH_TO_EXTRACTOR = YELP_PREFIX + "ff_extractor.p"
 
 data_info = {"source" : "YELP",
              "path" : "../data/review.json",
-             "is_balanced" : False,
-             "n_samples_train" : 300000,
-             "n_samples_val" : 30000,
-             "n_samples_test" : 30000,
-             "class_labels" : [1, 2, 3, 4, 5]
+             "is_balanced" : True,
+             "n_samples_train" : 40000,
+             "n_samples_val" : 4000,
+             "n_samples_test" : 4000,
+             "class_labels" : [1, 2, 4, 5]
 }
 
 classifier_info = {
                    "method" : "batch",
-                   "batch_size" : 100,
+                   "batch_size" : 500,
                    "nfeatures" : 2000,
                    "ngrams" : 2,
-                   "niterations" : 200,
+                   "niterations" : 600,
                    "alpha" : 0.0001,
                    "lambda" : 1,
                    "layers_dims" : [2000, 200, 5]

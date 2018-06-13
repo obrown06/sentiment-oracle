@@ -13,8 +13,8 @@ print("#################################################################### \n")
 print("GENERATING INPUT: PYTORCH FEED FORWARD\n")
 print("####################################################################\n")
 
-YELP_PREFIX = "../pickle/yelp/"
-AMAZON_PREFIX = "../pickle/amazon/"
+YELP_PREFIX = "../pickle/yelp/balanced/"
+AMAZON_PREFIX = "../pickle/amazon/balanced/"
 
 PATH_TO_CLASSIFIER = YELP_PREFIX + "pytorch_ff_classifier.p"
 PATH_TO_EXTRACTOR = YELP_PREFIX + "pytorch_ff_extractor.p"
@@ -22,7 +22,7 @@ PATH_TO_EXTRACTOR = YELP_PREFIX + "pytorch_ff_extractor.p"
 
 data_info = {"source" : "YELP",
              "path" : "../data/review.json",
-             "is_balanced" : False,
+             "is_balanced" : True,
              "n_samples_train" : 300000,
              "n_samples_val" : 30000,
              "n_samples_test" : 30000,

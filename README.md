@@ -9,33 +9,35 @@ The API currently supports requests to the following deployed classifiers:
   * Feed Forward Neural Network, trained with Adam and built with PyTorch
   * LSTM Network, built with Keras/Tensorflow
 
-Additionally, code for the following classifiers can be found in the source:
+Additional code for the following classifiers can also be found in the source:
 
   * Bernoulli Naive Bayes
   * Logistic Regression, trained with SGD
   * LSTM Network, built with Pytorch
 
-The api can be accessed [here](http://api.nlp-sentiment.com/predicts), and a working demo [here](http://nicholasbrown.io/demos/sentiment-oracle/)!
+The API can be accessed [here](http://api.nlp-sentiment.com/predicts); you can try out a working demo [here](http://nicholasbrown.io/demos/sentiment-oracle/)!
 
 ## Training, Testing, and Pickling
 
-All training scripts can be found in the `train/` directory and invoked with `python3 train_script.py`. All scripts set parameters relevant for loading data and training their classifiers in their `data_info` and `classifier_info` dicts, respectively; these can be modified to your liking! In addition, each script uses the [pickle](https://docs.python.org/3/library/pickle.html) library to serialize its classifier and corresponding extractor at the location of the path specified in the source. This means you will overwrite your classifiers if you train multiple in a row without modifying the pickle path! Until I make some sort of CLI, you will have to modify the path (and any other desired parameters) in the source.
+All training scripts can be found in the `train/` directory and invoked with `python3 train_script.py`. These scripts set parameters relevant for loading data and training their classifiers in their `data_info` and `classifier_info` dictionaries, respectively. Both of these can be modified to your liking!
 
-All testing scripts can be found in the `test/` directory and invoked with `python3 test_script.py`. Each script un-pickles a classifier and outputs its performance along with other relevant parameters specifying its architecture and training process.
+Each script uses the [pickle](https://docs.python.org/3/library/pickle.html) library to serialize its classifier and corresponding extractor at the location of the path specified in the training script. This means you will overwrite data if you train multiple classifiers in a row without updating the pickle path! Until I make some sort of CLI, you will have to modify that path (along with any other desired parameters) in the source.
+
+All testing scripts can be found in the `test/` directory and invoked with `python3 test_script.py`. Each script un-pickles a classifier and outputs 1) its performance and 2) other relevant parameters specifying its architecture and training process.
 
 ## Data
 
 I investigated three datasets:
 
-1) The [Amazon Reviews](https://www.kaggle.com/bittlingmayer/amazonreviews/data) dataset, which consists of 4,000,000 [amazon.com](http://www.amazon.com) customer reviews, each labeled either negative or positive.
-2) The [Yelp Reviews](https://www.yelp.com/dataset/download) dataset, which consists of 5,200,000 [Yelp](http://www.yelp.com) reviews, each labeled on a scale of 1 to 5.
-3) The [Stanford Treebank Rotten Tomatoes](https://nlp.stanford.edu/sentiment/) dataset, which consists of 215,154 unique phrases parsed from 11,855 single sentences extracted from movie reviews on [Rotten Tomatoes](http://www.rottentomatoes.com), each labeled on a scale of 1 to 5.
+1) The [Amazon Reviews](https://www.kaggle.com/bittlingmayer/amazonreviews/data) dataset, which consists of 4,000,000 [amazon.com](http://www.amazon.com) customer reviews labeled either negative or positive.
+2) The [Yelp Reviews](https://www.yelp.com/dataset/download) dataset, which consists of 5,200,000 [Yelp](http://www.yelp.com) reviews labeled on a scale of 1 to 5.
+3) The [Stanford TreeBank Rotten Tomatoes](https://nlp.stanford.edu/sentiment/) dataset, which consists of 215,154 unique phrases parsed from 11,855 single sentences extracted from movie reviews on [Rotten Tomatoes](http://www.rottentomatoes.com) labeled on a scale of 1 to 5.
 
-The relative performance on these datasets is described below. The set of classifiers currently deployed were trained on the Treebank dataset.
+The relative performance on these datasets is described below. The set of classifiers currently deployed were trained on the TreeBank dataset.
 
 ## Preprocessing
 
-Preprocessing steps on text strings include negation tracking, contraction expansion, and punctuation removal. I found that stopword removal diminished performance across all classifiers -- even after retaining those words with obvious connotations.
+Preprocessing operations performed on text strings include negation tracking, contraction expansion, and punctuation removal. I found that stopword removal diminished performance across all classifiers, even after retaining those stopwords with obvious connotations.
 
 All preprocessing code lives in `/data/clean.py`.
 
@@ -43,11 +45,11 @@ All preprocessing code lives in `/data/clean.py`.
 
 ## Feature Extraction
 
-Depending on the classifier, we use one of three kinds of features.
+Depending on the classifier, we train using one of three kinds of features.
 
 **words** (Bernoulli + Multinomial Naive Bayes)
 
-Both Bernoulli and Multinomial Naive Bayes use individual words as features. MNB constructs conditional probabilities based on on the number of instances of a word in a class, while BNB does the same based on the number of documents in the class which contain the word. Both classifiers "train" by building a vocabulary of word counts across all documents in their corpus; feature extraction is as simple as splitting documents into individual tokens!
+Both Bernoulli and Multinomial Naive Bayes use individual words as features. MNB constructs conditional probabilities based on on the number of times a word appears in a class, while BNB does the same based on the number of documents in the class which contain the word. Both classifiers "train" by updating a vocabulary of word counts across all documents in their corpus. For such a simple model, feature extraction is as simple as splitting documents into individual tokens!
 
 **Bag-Of-Ngrams** (LR, NN)
 
@@ -59,33 +61,33 @@ For example, under a vocabulary *V* : `{"it", "octupus", "best", "times"}`, we w
 
 The Bag-of-Ngrams model generalizes BOW to sequences of one **or more** adjacent words -- known as Ngrams. An example of a vocabulary containing both 1-grams and 2-grams would be *V* = `{"it", "octopus", "best", "it was", "was the"}`; under this vocabulary, the previous document *D* would be represented as `[2, 0, 1, 2, 2]`
 
-Inevitably, lower order grams will be more common than their higher-order counterparts, so it is common when building a vocabulary to allocate percentages to tokens of different gram-numbers. I found that evenly splitting the vocabulary between 1-grams and 2-grams significantly boosted classifier performance; extending to higher order grams did not.
+Inevitably, lower order grams will be more common than their higher-order counterparts, so it is common to reserve percentages within a vocabulary for tokens of particular gram-numbers. I found that evenly splitting the vocabulary between 1-grams and 2-grams significantly boosted classifier performance; extending to higher order grams did not.
 
 All extraction functionality is wrapped in the  extractor class (which can be pickled and reused) found in `/data/bag_of_ngrams_extractor.py`. Ngram tokenization and sorting is performed with NLTK.
 
 
 **Word Embeddings** (LSTM)
 
-While the Bag-of-Ngrams model adeptly captures frequency of individual words, it fails to encode any information about the semantic relationships between words. Word Embeddings expresses this second category of information by converting each word to a high-dimensional vector of floating point numbers which, when trained based on some co-occurrence criteria over a sufficiently sized document corpus, represent some portion of its semantic meaning.
+While the Bag-of-Ngrams model adeptly captures frequency of individual words, it fails to encode any information about the semantic relationships between them. Word Embeddings capture this second category of information by converting each word to a high-dimensional vector of floating point numbers which, when trained based on some co-occurrence criteria over a sufficiently sized document corpus, represent some portion of its semantic meaning.
 
-Word embeddings can be either trained along with the classifier in question or imported from some other corpus. I used pre-trained [GloVe embeddings](https://nlp.stanford.edu/projects/glove/) to generate input for the PyTorch LSTM (see `/classifiers/lstm_pytorch.py` and `/data/glove_extractor.py`) (a note, however: I caution against following my procedure too closely, as the classifier's performance has been lackluster). On the other hand, the Keras LSTM (see `/classifiers/lstm_keras.py` and `/data/keras_extractor.py`) includes an Embedding layer initialized to random weights which is then trained in parallel with the LSTM layers.
+Word embeddings can be either trained along with the classifier in question or imported from some other corpus. I used pre-trained [GloVe embeddings](https://nlp.stanford.edu/projects/glove/) to generate input for the PyTorch LSTM (see `/classifiers/lstm_pytorch.py` and `/data/glove_extractor.py`) (a note, however: the classifier's performance has been lackluster, so I caution against following my procedure too closely). On the other hand, the Keras LSTM (see `/classifiers/lstm_keras.py` and `/data/keras_extractor.py`) includes an Embedding layer initialized to random weights which is then trained in parallel with the LSTM layers.
 
 ## Performance
 
-Classifiers were trained and validated on three datasets: the [Amazon Reviews Dataset](https://www.kaggle.com/bittlingmayer/amazonreviews/data), the [Yelp Reviews Dataset](https://www.yelp.com/dataset/download), and the [Stanford Treebank Rotten Tomatoes Dataset](https://nlp.stanford.edu/sentiment/). As both of the '1' to '5' datasets are significantly
-unbalanced (the Yelp dataset towards ratings of '4' and '5' and the Rotten Tomatoes dataset towards ratings of '3'), I have also evaluated their performance on artificially balanced subsets of both. In addition, I have included the binary classification performance of all classifiers on both of the '1' to '5' datasets; these were generated by excluding neutral '3' ratings and consolidating classes '1' and '2' and classes '4' and '5'. The listed percentages represent accuracy values over the test set.
+Classifiers were trained and validated on three datasets: the [Amazon Reviews Dataset](https://www.kaggle.com/bittlingmayer/amazonreviews/data), the [Yelp Reviews Dataset](https://www.yelp.com/dataset/download), and the [Stanford Treebank Rotten Tomatoes Dataset](https://nlp.stanford.edu/sentiment/). As both of the 1-to-5 datasets are significantly
+unbalanced (the Yelp dataset towards ratings of '4' and '5' and the Rotten Tomatoes dataset towards ratings of '3'), I have also evaluated their performance on artificially balanced subsets of both. In addition, I have included the binary classification performance of all classifiers on both of the '1' to '5' datasets; these were generated by excluding neutral '3' ratings and consolidating classes '1' and '2' and classes '4' and '5'. All listed percentages represent accuracy values over the test set.
 
-| Classifier          | Amazon              | Yelp (fine-grained) | Yelp (fine-grained / balanced) |
-| ----------          | ------              | ------------------- | ------------------------------
-| Multinomial NB      | 84.7% (n = 3000000) | 60.5% (n = 3000000) | 54.1% (n = 1500000)            |
-| Logistic Regression | 85.7% (n = 300000)  | 62.7% (n = 3000000) | 
-| Feed Forward (SGD)  | 86.6% (n = 300000)  | 62.9% (n = 300000)  |
-| Feed Forward (Adam) | 88.2% (n = 1000000) | 63.1% (n = 300000)  |
-| LSTM                | 90.3% (n = 1000000) | 66.3% (n = 1000000) |
+| Classifier          | Amazon              | Yelp (fine-grained) | Yelp (balanced)    | Yelp (binary)
+| ----------          | ------              | ------------------- | ----------------------------------
+| Multinomial NB      | 84.7% (n = 3000000) | 60.5% (n = 3000000) | 54.1% (n = 1500000)| 89.6% (n = 1500000)
+| Logistic Regression | 85.7% (n = 300000)  | 62.7% (n = 3000000) | 55.3% (n = 400000) | 89.23%
+| Feed Forward (SGD)  | 86.6% (n = 300000)  | 62.9% (n = 300000)  | 52.5% (n = 200000) |
+| Feed Forward (Adam) | 88.2% (n = 1000000) | 63.1% (n = 300000)  | 53.2% (n = 200000) |
+| LSTM                | 90.3% (n = 1000000) | 66.3% (n = 1000000) | 59.4% (n = 500000) |
 
 Some notes:
 
-* Best performance across all datasets was achieved by the LSTM classifier, which scored within the top 3% of submissions for the [Sentiment Analysis on Movie Reviews Kaggle Competition](https://www.kaggle.com/c/sentiment-analysis-on-movie-reviews/leaderboard) (though still well shy of results achieved with recursive networks trained on deep semantic structures; see [Socher et al](https://nlp.stanford.edu/sentiment/)).
+* Best performance across all datasets was achieved by the LSTM classifier, whose accuracy scored within the top 3% of submissions for the [Sentiment Analysis on Movie Reviews Kaggle Competition](https://www.kaggle.com/c/sentiment-analysis-on-movie-reviews/leaderboard) (though still well shy of results achieved with recursive networks trained on deep semantic structures; see [Socher et al](https://nlp.stanford.edu/sentiment/)).
 * MNB achieves best performance on the RT dataset. A possible reason for this is the relative brevity of documents in that dataset.
 * All classifiers perform worse on the balanced RT and Yelp datasets, but the effect is most pronounced for deep networks.
 

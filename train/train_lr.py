@@ -13,7 +13,7 @@ print("GENERATING INPUT: LOGISTIC REGRESSION\n")
 print("####################################################################\n")
 
 AMAZON_PREFIX = "../pickle/amazon/"
-YELP_PREFIX = "../pickle/yelp/balanced/"
+YELP_PREFIX = "../pickle/yelp/balanced/binary/"
 
 PATH_TO_CLASSIFIER = YELP_PREFIX + "lr_classifier.p"
 PATH_TO_EXTRACTOR = YELP_PREFIX + "lr_extractor.p"
@@ -21,10 +21,10 @@ PATH_TO_EXTRACTOR = YELP_PREFIX + "lr_extractor.p"
 data_info = {"source" : "YELP",
              "path" : "../data/review.json",
              "is_balanced" : True,
-             "n_samples_train" : 300000,
+             "n_samples_train" : 100000,
              "n_samples_val" : 10000,
              "n_samples_test" : 10000,
-             "class_labels" : [1, 2, 3, 4, 5]
+             "class_labels" : [1, 2, 4, 5]
 }
 
 classifier_info = {"nfeatures" : 2000,
