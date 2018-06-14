@@ -32,7 +32,7 @@ data_info = {"source" : "YELP",
              "n_samples_train" : 200000,
              "n_samples_val" : 20000,
              "n_samples_test" : 20000,
-             "class_labels" : [1, 2, 3, 4, 5]
+             "class_labels" : [1, 2, 4, 5]
 }
 
 classifier_info = {"embed_size" : 300,
@@ -54,11 +54,15 @@ pickle.dump(extractor, open(PATH_TO_EXTRACTOR, "wb"))
 train_input = data_handler.generate_input(train_documents, extractor)
 val_input = data_handler.generate_input(val_documents, extractor)
 
+labels_to_idx = {1: 0, 2: 1, 4: 2, 5: 3}
+cat_train_labels = np.array([labels_to_idx[label] for label in train_labels])
+cat_val_labels = np.array([labels_to_idx[label] for label in val_labels])
+
 train_labels = np.array(train_labels)
 val_labels = np.array(val_labels)
 
-train_label_input = keras.utils.to_categorical(train_labels - 1, len(data_info["class_labels"]))
-val_label_input = keras.utils.to_categorical(val_labels - 1, len(data_info["class_labels"]))
+train_label_input = keras.utils.to_categorical(cat_train_labels, len(data_info["class_labels"]))
+val_label_input = keras.utils.to_categorical(cat_val_labels, len(data_info["class_labels"]))
 
 print("#################################################################### \n")
 print("TRAINING: LSTM\n")
@@ -78,6 +82,9 @@ print("VALIDATING: LSTM\n")
 print("#################################################################### \n")
 
 predictions, actual = lstm_classifier.test(val_input, val_labels)
+
+print("predictions", predictions)
+print("actual", actual)
 accuracy, near_accuracy, accurate_polarity = test_utils.multiclass_accuracy(predictions, actual)
 
 print("####################################################################\n")

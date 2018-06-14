@@ -35,7 +35,7 @@ classifier_info = {
                    "niterations" : 600,
                    "alpha" : 0.0001,
                    "lambda" : 1,
-                   "layers_dims" : [2000, 200, 5]
+                   "layers_dims" : [2000, 200, 4]
 
 }
 

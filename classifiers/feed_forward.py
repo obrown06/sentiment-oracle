@@ -56,8 +56,14 @@ class FeedForwardClassifier:
         """
         one_hot = np.zeros((self.layer_dims[-1], len(Y)))
 
+        labels_dict = dict()
+
+        for i in range(len(self.class_labels)):
+            labels_dict[self.class_labels[i]] = i
+
         for i in range(len(Y)):
-            one_hot[Y[i] - 1, i] = 1
+            index = labels_dict[Y[i]]
+            one_hot[index, i] = 1
 
 
         return one_hot
@@ -174,7 +180,7 @@ class FeedForwardClassifier:
 
         AL, cache = self.linear_activation_forward(A, parameters["W" + str(L)], parameters["b" + str(L)], "softmax")
         caches.append(cache)
-        assert(AL.shape == (5,X.shape[1]))
+        assert(AL.shape == (len(self.class_labels),X.shape[1]))
 
         return AL, caches
 

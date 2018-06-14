@@ -26,7 +26,7 @@ data_info = {"source" : "YELP",
              "n_samples_train" : 300000,
              "n_samples_val" : 30000,
              "n_samples_test" : 30000,
-             "class_labels" : [1, 2, 3, 4, 5]
+             "class_labels" : [1, 2, 4, 5]
 }
 
 classifier_info = {
@@ -37,7 +37,7 @@ classifier_info = {
                    "alpha" : 0.001,
                    "embedding_dim" : 2000,
                    "hidden_dim" : 200,
-                   "output_dim" : 5
+                   "output_dim" : 4
 }
 
 train_documents, train_labels, val_documents, val_labels, test_documents, test_labels, end_index = data_handler.load_data(data_info["source"], data_info["path"], data_info["n_samples_train"], data_info["n_samples_val"], data_info["n_samples_test"], data_info["class_labels"], is_balanced=data_info["is_balanced"])
