@@ -101,7 +101,7 @@ unbalanced (the Yelp dataset towards ratings of '4' and '5' and the Rotten Tomat
 
 | Classifier          | Yelp  | RT    |
 | ----------          | ------| ------|
-| Multinomial NB      | 54.1% | 41.9% |
+| Multinomial NB      | 54.7% | 41.9% |
 | Logistic Regression | 55.3% | 37.8% |
 | Feed Forward (SGD)  | 52.5% | 37.1% |
 | Feed Forward (Adam) | 53.2% | 40.1% |

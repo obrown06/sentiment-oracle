@@ -11,7 +11,7 @@ import data_handler
 print("#################################################################### \n")
 print("TESTING: FEED FORWARD\n")
 print("####################################################################\n")
-YELP_PREFIX = "../pickle/yelp/"
+YELP_PREFIX = "../pickle/yelp/balanced/"
 AMAZON_PREFIX = "../pickle/amazon/"
 
 PATH_TO_CLASSIFIER = YELP_PREFIX + "ff_classifier.p"

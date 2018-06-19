@@ -12,7 +12,7 @@ print("#################################################################### \n")
 print("TESTING: LOGISTIC REGRESSION\n")
 print("####################################################################\n")
 
-YELP_PREFIX = "../pickle/yelp/"
+YELP_PREFIX = "../pickle/yelp/balanced/"
 AMAZON_PREFIX = "../pickle/amazon/"
 
 PATH_TO_CLASSIFIER = YELP_PREFIX + "lr_classifier.p"

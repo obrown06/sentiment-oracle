@@ -15,7 +15,7 @@ print("TESTING: NAIVE BAYES\n")
 print("####################################################################\n")
 
 AMAZON_PREFIX = "../pickle/amazon/"
-YELP_PREFIX = "../pickle/yelp/balanced/binary/"
+YELP_PREFIX = "../pickle/yelp/balanced/"
 PATH_TO_CLASSIFIER = YELP_PREFIX + "nb_multinomial_classifier.p"
 
 classifier = pickle.load(open(PATH_TO_CLASSIFIER, "rb"))

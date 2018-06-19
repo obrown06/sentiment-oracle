@@ -14,18 +14,18 @@ print("####################################################################\n")
 
 YELP_PREFIX = "../pickle/yelp/balanced/"
 AMAZON_PREFIX = "../pickle/amazon/"
-RT_PREFIX = "../pickle/rt/balanced/binary/"
+RT_PREFIX = "../pickle/rt/balanced/"
 
-PATH_TO_CLASSIFIER = RT_PREFIX + "ff_classifier.p"
-PATH_TO_EXTRACTOR = RT_PREFIX + "ff_extractor.p"
+PATH_TO_CLASSIFIER = YELP_PREFIX + "ff_classifier.p"
+PATH_TO_EXTRACTOR = YELP_PREFIX + "ff_extractor.p"
 
-data_info = {"source" : "ROTTEN_TOMATOES",
-             "path" : "../data/train.tsv",
+data_info = {"source" : "YELP",
+             "path" : "../data/review.json",
              "is_balanced" : True,
-             "n_samples_train" : 6000,
-             "n_samples_val" : 500,
-             "n_samples_test" : 500,
-             "class_labels" : [1, 2, 4, 5]
+             "n_samples_train" : 50000,
+             "n_samples_val" : 5000,
+             "n_samples_test" : 5000,
+             "class_labels" : [1, 2, 3, 4, 5]
 }
 
 classifier_info = {
@@ -34,9 +34,9 @@ classifier_info = {
                    "nfeatures" : 2000,
                    "ngrams" : 2,
                    "niterations" : 600,
-                   "alpha" : 0.01,
+                   "alpha" : 0.0001,
                    "lambda" : 1,
-                   "layers_dims" : [2000, 200, 4]
+                   "layers_dims" : [2000, 200, 5]
 
 }
 
