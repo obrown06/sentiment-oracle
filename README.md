@@ -89,13 +89,13 @@ unbalanced (the Yelp dataset towards ratings of '4' and '5' and the Rotten Tomat
 
 **Fine-Grained**
 
-| Classifier          | Yelp (fine-grained) | RT (fine-grained) |
-| ----------          | ------------------- | ----------------- |
-| Multinomial NB      | 60.5%               | 61.4%             |
-| Logistic Regression | 62.7%               | 58.8%             |
-| Feed Forward (SGD)  | 62.9%               | 58.2%             |
-| Feed Forward (Adam) | 63.1%               | 59.1%             |
-| LSTM                | 66.3%               | 64.9%             |
+| Classifier          | Yelp  | RT    |
+| ----------          | ------| ------|
+| Multinomial NB      | 60.5% | 61.4% |
+| Logistic Regression | 62.7% | 58.8% |
+| Feed Forward (SGD)  | 62.9% | 58.2% |
+| Feed Forward (Adam) | 63.1% | 59.1% |
+| LSTM                | 66.3% | 64.9% |
 
 **Fine-Grained + Balanced**
 
