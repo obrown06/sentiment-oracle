@@ -14,16 +14,17 @@ print("####################################################################\n")
 
 YELP_PREFIX = "../pickle/yelp/balanced/"
 AMAZON_PREFIX = "../pickle/amazon/"
+RT_PREFIX = "../pickle/rt/balanced/binary/"
 
-PATH_TO_CLASSIFIER = YELP_PREFIX + "ff_classifier.p"
-PATH_TO_EXTRACTOR = YELP_PREFIX + "ff_extractor.p"
+PATH_TO_CLASSIFIER = RT_PREFIX + "ff_classifier.p"
+PATH_TO_EXTRACTOR = RT_PREFIX + "ff_extractor.p"
 
-data_info = {"source" : "YELP",
-             "path" : "../data/review.json",
+data_info = {"source" : "ROTTEN_TOMATOES",
+             "path" : "../data/train.tsv",
              "is_balanced" : True,
-             "n_samples_train" : 40000,
-             "n_samples_val" : 4000,
-             "n_samples_test" : 4000,
+             "n_samples_train" : 6000,
+             "n_samples_val" : 500,
+             "n_samples_test" : 500,
              "class_labels" : [1, 2, 4, 5]
 }
 
@@ -33,14 +34,14 @@ classifier_info = {
                    "nfeatures" : 2000,
                    "ngrams" : 2,
                    "niterations" : 600,
-                   "alpha" : 0.0001,
+                   "alpha" : 0.01,
                    "lambda" : 1,
                    "layers_dims" : [2000, 200, 4]
 
 }
 
 train_documents, train_labels, val_documents, val_labels, test_documents, test_labels, end_index = data_handler.load_data(data_info["source"], data_info["path"], data_info["n_samples_train"], data_info["n_samples_val"], data_info["n_samples_test"], data_info["class_labels"], is_balanced=data_info["is_balanced"])
-
+print("end_index", end_index)
 extractor = data_handler.generate_bag_of_ngrams_extractor(train_documents, classifier_info["nfeatures"], classifier_info["ngrams"])
 pickle.dump(extractor, open(PATH_TO_EXTRACTOR, "wb"))
 
@@ -65,6 +66,8 @@ print("VALIDATING: FEED FORWARD\n")
 print("#################################################################### \n")
 
 predictions, actual = ff_classifier.test(val_input, val_label_input)
+print("predictions", predictions)
+print("actual", actual)
 accuracy, near_accuracy, accurate_polarity = test_utils.multiclass_accuracy(predictions, actual)
 precision, recall, specificity, accuracy, auc = test_utils.test_statistics(predictions, actual, pos_label=2)
 print("####################################################################\n")

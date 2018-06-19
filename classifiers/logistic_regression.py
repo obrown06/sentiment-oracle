@@ -50,9 +50,14 @@ class LogisticRegressionClassifier:
         """
         one_hot = np.zeros((len(Y), len(self.class_labels)))
 
-        for i in range(len(Y)):
-            one_hot[i, Y[i] - 1] = 1
+        labels_dict = dict()
 
+        for i in range(len(self.class_labels)):
+            labels_dict[self.class_labels[i]] = i
+
+        for i in range(len(Y)):
+            index = labels_dict[Y[i]]
+            one_hot[i, index] = 1
 
         return one_hot
 

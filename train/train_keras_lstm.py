@@ -21,17 +21,18 @@ print("####################################################################\n")
 
 AMAZON_PREFIX = "../pickle/amazon/"
 YELP_PREFIX = "../pickle/yelp/balanced/"
+RT_PREFIX = "../pickle/rt/balanced/binary/"
 
-PATH_TO_CLASSIFIER = YELP_PREFIX + "keras_lstm_classifier.h5"
-PATH_TO_WRAPPER = YELP_PREFIX + "keras_lstm_wrapper.p"
-PATH_TO_EXTRACTOR = YELP_PREFIX + "keras_lstm_extractor.p"
+PATH_TO_CLASSIFIER = RT_PREFIX + "keras_lstm_classifier.h5"
+PATH_TO_WRAPPER = RT_PREFIX + "keras_lstm_wrapper.p"
+PATH_TO_EXTRACTOR = RT_PREFIX + "keras_lstm_extractor.p"
 
-data_info = {"source" : "YELP",
-             "path" : "../data/review.json",
+data_info = {"source" : "ROTTEN_TOMATOES",
+             "path" : "../data/train.tsv",
              "is_balanced" : True,
-             "n_samples_train" : 200000,
-             "n_samples_val" : 20000,
-             "n_samples_test" : 20000,
+             "n_samples_train" : 6000,
+             "n_samples_val" : 500,
+             "n_samples_test" : 500,
              "class_labels" : [1, 2, 4, 5]
 }
 

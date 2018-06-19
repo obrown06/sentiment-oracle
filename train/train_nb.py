@@ -16,17 +16,19 @@ print("#################################################################### \n")
 print("PREPARING INPUT: NAIVE BAYES\n")
 print("####################################################################\n")
 
-data_info = {"source" : "YELP",
-             "path" : "../data/review.json",
+data_info = {"source" : "ROTTEN_TOMATOES",
+             "path" : "../data/train.tsv",
              "is_balanced" : True,
-             "n_samples_train" : 400000,
+             "n_samples_train" : 6000,
              "n_samples_val" : 0,
-             "n_samples_test" : 4000,
+             "n_samples_test" : 500,
              "class_labels" : [1, 2, 4, 5]}
 
 AMAZON_PREFIX = "../pickle/amazon/"
 YELP_PREFIX = "../pickle/yelp/balanced/binary/"
-PATH_TO_CLASSIFIER = YELP_PREFIX + "nb_multinomial_classifier.p"
+RT_PREFIX = "../pickle/rt/balanced/binary/"
+
+PATH_TO_CLASSIFIER = RT_PREFIX + "nb_multinomial_classifier.p"
 
 train_documents, train_labels, val_documents, val_labels, test_documents, test_labels, end_index = data_handler.load_data(data_info["source"], data_info["path"], data_info["n_samples_train"], data_info["n_samples_train"], data_info["n_samples_test"], data_info["class_labels"], is_balanced=data_info["is_balanced"])
 print("end index: ", end_index)
