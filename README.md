@@ -15,7 +15,7 @@ Additional code for the following classifiers can also be found in the source:
   * Logistic Regression, trained with SGD
   * LSTM Network, built with Pytorch
 
-The API can be accessed [here](http://api.nlp-sentiment.com/predicts); you can try out a working demo [here](http://nicholasbrown.io/demos/sentiment-oracle/)!
+The API can be accessed [here](http://api.nlp-sentiment.com/predicts); you can try out a working demo [here](http://nicholasbrown.io/sentiment-oracle/)!
 
 ## Training, Testing, and Pickling
 
@@ -103,9 +103,9 @@ unbalanced (the Yelp dataset towards ratings of '4' and '5' and the Rotten Tomat
 | ----------          | ------| ------|
 | Multinomial NB      | 54.7% | 41.9% |
 | Logistic Regression | 55.3% | 37.8% |
-| Feed Forward (SGD)  | 52.5% | 37.1% |
-| Feed Forward (Adam) | 53.2% | 40.1% |
-| LSTM                | 59.4% | 47.7% |
+| Feed Forward (SGD)  | 53.6% | 37.1% |
+| Feed Forward (Adam) | 53.8% | 40.1% |
+| LSTM                | 60.1% | 47.7% |
 
 
 Some notes:

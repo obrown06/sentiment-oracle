@@ -8,20 +8,22 @@ import pickle
 from data_handler import invoke_predict
 from falcon_cors import CORS
 
+cors = CORS(allow_origins_list=['https://nicholasbrown.io/sentiment-oracle', 'http://nicholasbrown.io/sentiment-oracle', 'http://localhost:8000', 'http://localhost:8000/software'])
 public_cors = CORS(allow_all_origins=True)
-cors = CORS(allow_origins_list=['http://localhost:8000', 'http://localhost:8000/software'])
 
-models = {"nb": pickle.load(open("../pickle/nb_multinomial_classifier.p", "rb")), "lr" : pickle.load(open("../pickle/lr_classifier.p", "rb")),  "ff_gd" : pickle.load(open("../pickle/ff_classifier.p", "rb")), "ff_adam" : pickle.load(open("../pickle/pytorch_ff_classifier.p", "rb")), "lstm" : lstm_keras.load_keras("../pickle/lstm_keras.h5", "../pickle/lstm_wrapper.p")}
-extractors = {"lr" : pickle.load(open("../pickle/lr_extractor.p", "rb")), "ff_gd" : pickle.load(open("../pickle/ff_extractor.p", "rb")), "ff_adam" : pickle.load(open("../pickle/pytorch_ff_extractor.p", "rb")), "lstm" : pickle.load(open("../pickle/keras_lstm_extractor.p", "rb"))}
+models = {"nb": pickle.load(open("../pickle/nb_multinomial_classifier.p", "rb")),  "ff_gd" : pickle.load(open("../pickle/ff_classifier.p", "rb")), "ff_adam" : pickle.load(open("../pickle/pytorch_ff_classifier.p", "rb")), "lstm" : lstm_keras.load_keras("../pickle/keras_lstm_classifier.h5", "../pickle/keras_lstm_wrapper.p")}
+
+extractors = {"ff_gd" : pickle.load(open("../pickle/ff_extractor.p", "rb")), "ff_adam" : pickle.load(open("../pickle/pytorch_ff_extractor.p", "rb")), "lstm" : pickle.load(open("../pickle/keras_lstm_extractor.p", "rb"))}
 
 class InfoResource(object):
+    cors = public_cors
     def on_get(self, req, resp):
         """Handles GET requests"""
         resp.status = falcon.HTTP_200  # This is the default status
         resp.body = ('\nThis is an API for Nick\'s collection \n'
                      'of deployed sentiment classifiers. \n'
                      'Each of these intake a text string and return \n'
-                     'the sentiment ("positive" or "negative") which \n'
+                     'the sentiment (on a 1 to 5 scale) which \n'
                      'it expresses. To learn more about this model, \n'
                      'send a GET request to the /predicts endpoint.')
 
@@ -31,11 +33,11 @@ class PredictsResource(object):
     def on_get(self, req, resp):
         """Handles GET requests"""
         resp.status = falcon.HTTP_200  # This is the default status
-        resp.body = ('\nThis is the PREDICT endpoint for Nick\'s collection of \n'
+        resp.body = ('\nThis is the PREDICTS endpoint for Nick\'s collection of \n'
                      'sentiment classifiers. Both requests and responses are served in JSON. \n\n'
 
                      'The classifiers available for use are as follows: \n\n'
-                     ' 1 :       \'naive_bayes\' \n'
+                     ' 1 :       \'naive_bayes\' \n\n'
                      ' 2 :       \'feed_forward_gd\' \n\n'
                      ' 3 :       \'feed_forward_adam\' \n\n'
                      ' 4 :       \'lstm\' \n\n'

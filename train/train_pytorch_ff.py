@@ -17,17 +17,17 @@ YELP_PREFIX = "../pickle/yelp/balanced/"
 AMAZON_PREFIX = "../pickle/amazon/balanced/"
 RT_PREFIX = "../pickle/rt/balanced/binary/"
 
-PATH_TO_CLASSIFIER = RT_PREFIX + "pytorch_ff_classifier.p"
-PATH_TO_EXTRACTOR = RT_PREFIX + "pytorch_ff_extractor.p"
+PATH_TO_CLASSIFIER = YELP_PREFIX + "pytorch_ff_classifier.p"
+PATH_TO_EXTRACTOR = YELP_PREFIX + "pytorch_ff_extractor.p"
 
 
-data_info = {"source" : "ROTTEN_TOMATOES",
-             "path" : "../data/train.tsv",
+data_info = {"source" : "YELP",
+             "path" : "../data/review.json",
              "is_balanced" : True,
-             "n_samples_train" : 6000,
-             "n_samples_val" : 500,
-             "n_samples_test" : 500,
-             "class_labels" : [1, 2, 4, 5]
+             "n_samples_train" : 200000,
+             "n_samples_val" : 10000,
+             "n_samples_test" : 10000,
+             "class_labels" : [1, 2, 3, 4, 5]
 }
 
 classifier_info = {

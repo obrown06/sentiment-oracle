@@ -6,7 +6,7 @@ sys.path.insert(0, '../classifiers/')
 import os
 import pickle
 import clean
-import bow_extractor
+import bag_of_ngrams_extractor
 import lstm_keras
 import glove_extractor
 from predict import predict

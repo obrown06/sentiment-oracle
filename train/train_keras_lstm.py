@@ -23,17 +23,17 @@ AMAZON_PREFIX = "../pickle/amazon/"
 YELP_PREFIX = "../pickle/yelp/balanced/"
 RT_PREFIX = "../pickle/rt/balanced/binary/"
 
-PATH_TO_CLASSIFIER = RT_PREFIX + "keras_lstm_classifier.h5"
-PATH_TO_WRAPPER = RT_PREFIX + "keras_lstm_wrapper.p"
-PATH_TO_EXTRACTOR = RT_PREFIX + "keras_lstm_extractor.p"
+PATH_TO_CLASSIFIER = YELP_PREFIX + "keras_lstm_classifier.h5"
+PATH_TO_WRAPPER = YELP_PREFIX + "keras_lstm_wrapper.p"
+PATH_TO_EXTRACTOR = YELP_PREFIX + "keras_lstm_extractor.p"
 
-data_info = {"source" : "ROTTEN_TOMATOES",
-             "path" : "../data/train.tsv",
+data_info = {"source" : "YELP",
+             "path" : "../data/review.json",
              "is_balanced" : True,
-             "n_samples_train" : 6000,
-             "n_samples_val" : 500,
-             "n_samples_test" : 500,
-             "class_labels" : [1, 2, 4, 5]
+             "n_samples_train" : 200000,
+             "n_samples_val" : 10000,
+             "n_samples_test" : 10000,
+             "class_labels" : [1, 2, 3, 4, 5]
 }
 
 classifier_info = {"embed_size" : 300,
@@ -55,7 +55,7 @@ pickle.dump(extractor, open(PATH_TO_EXTRACTOR, "wb"))
 train_input = data_handler.generate_input(train_documents, extractor)
 val_input = data_handler.generate_input(val_documents, extractor)
 
-labels_to_idx = {1: 0, 2: 1, 4: 2, 5: 3}
+labels_to_idx = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4}
 cat_train_labels = np.array([labels_to_idx[label] for label in train_labels])
 cat_val_labels = np.array([labels_to_idx[label] for label in val_labels])
 
